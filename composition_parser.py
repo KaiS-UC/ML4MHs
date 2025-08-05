@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import re
-import periodictable
+#import periodictable
 
 
 FORMULA_RE = r'([A-Z][a-z]?)|(\.\d+)|(\d+\.\d+)|(\d+)|(\(.*\))'
-MASSES = {el.symbol: el.mass for el in periodictable.elements}
+#MASSES = {el.symbol: el.mass for el in periodictable.elements}
 
 
 def parse_composition(s):
@@ -56,18 +56,18 @@ def parse_composition(s):
     return result
 
 
-def mass_per_atom(s):
-    """
-    This function calculates the mass per atom of a given composition string
-    """
-    # get weights from composition parser
-    weights = parse_composition(s)
+# def mass_per_atom(s):
+#     """
+#     This function calculates the mass per atom of a given composition string
+#     """
+#     # get weights from composition parser
+#     weights = parse_composition(s)
 
-    # calculate total mass and normalize by number of atoms
-    mass = sum([weights[el]*MASSES[el] for el in weights.keys()])
-    mpa = mass / sum(weights.values())
+#     # calculate total mass and normalize by number of atoms
+#     mass = sum([weights[el]*MASSES[el] for el in weights.keys()])
+#     mpa = mass / sum(weights.values())
 
-    return mpa
+#     return mpa
 
 
 if __name__ == "__main__":
@@ -75,4 +75,4 @@ if __name__ == "__main__":
     comp = sys.argv[1]
     print(f"Parsing composition string: {comp}")
     print(parse_composition(comp))
-    print(f"Average mass per atom: {mass_per_atom(comp)}")
+#    print(f"Average mass per atom: {mass_per_atom(comp)}")
