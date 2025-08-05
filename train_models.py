@@ -253,7 +253,7 @@ if __name__ == "__main__":
         print(f"  Test RMSE: {test_scores['root_mean_squared_error']:.2f}")
 
         # Save the model
-        model_filename = f"../models/{model_name}_best_model.pkl"
+        model_filename = f"models/{model_name}_best_model.pkl"
         with open(model_filename, 'wb') as f:
             pickle.dump(best_model, f, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"Model saved to {model_filename}")
@@ -266,14 +266,6 @@ if __name__ == "__main__":
         for i in feature_importances.argsort()[::-1]:
             print(f"    {X_test.columns[i]:<28}: {feature_importance[i]:.3f} ± {feature_importance_std[i]:.3f}")
 
-        # Plot real vs predicted values
-        ax = plot_real_vs_predicted(y_train, y_train_pred, label='Trianing Data', color='blue')
-        ax = plot_real_vs_predicted(y_test, y_test_pred, ax=ax, label='Test Data', color='green')
-        fig = ax.get_figure()
-        fig.tight_layout()
-        fig.savefig(f"../images/{model_name}_real_vs_predicted.png", dpi=300)
-        print(f"Plot saved to ../images/{model_name}_real_vs_predicted.png", end='\n' + '-'*40 + '\n')
-
     # Save the model evaluations, feature importances, and predictions
     model_evaluations_train = pd.DataFrame(model_evaluations_train)
     model_evaluations_test = pd.DataFrame(model_evaluations_test)
@@ -282,11 +274,11 @@ if __name__ == "__main__":
     model_predictions_train = pd.DataFrame(model_predictions_train)
     model_predictions_test = pd.DataFrame(model_predictions_test)
 
-    model_evaluations_train.to_excel('../model_evaluations_train.xlsx')
-    model_evaluations_test.to_excel('../model_evaluations_test.xlsx')
-    model_feature_importances.to_excel('../model_feature_importances.xlsx')
-    model_feature_importances_std.to_excel('../model_feature_importances_std.xlsx')
-    model_predictions_train.to_excel('../model_predictions_train.xlsx')
-    model_predictions_test.to_excel('../model_predictions_test.xlsx')
+    model_evaluations_train.to_excel('training_data/model_evaluations_train.xlsx')
+    model_evaluations_test.to_excel('training_data/model_evaluations_test.xlsx')
+    model_feature_importances.to_excel('training_data/model_feature_importances.xlsx')
+    model_feature_importances_std.to_excel('training_data/model_feature_importances_std.xlsx')
+    model_predictions_train.to_excel('training_data/model_predictions_train.xlsx')
+    model_predictions_test.to_excel('training_data/model_predictions_test.xlsx')
 
     print("All models trained and evaluated successfully.")
