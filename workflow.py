@@ -9,17 +9,18 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import BayesianRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, root_mean_squared_error
+from sklearn.inspection import permutation_importance
 
 
 MODEL_PARAM_GRIDS = {
     'adaboost': {
-        'estimator__max_depth': [2, 3, 4, 5, 6, 7, 8],
-        'n_estimators': [50, 100, 200, 300, 400, 500, 800, 1200, 50000],
-        'learning_rate': [0.01, 0.1, 0.5, 1.0, 1.5]
+        'estimator__max_depth': [1, 5, 10, 15, 20],
+        'n_estimators': [50, 100, 500, 1000, 5000, 10000, 50000, 100000],
+        'learning_rate': [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]
     },
     'gradientboost': {
         'n_estimators': [50, 100, 200, 300, 400, 500, 800, 1200],
-        'learning_rate': [0.01, 0.1, 0.5, 1.0],
+        'learning_rate': [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0],
         'max_depth': [2, 3, 4, 5, 6, 7, 8],
         'subsample': [0.8, 0.9, 1.0]
     },
@@ -155,6 +156,22 @@ def evaluate_model(model, X_test, y_test):
     return evaluation_metrics, y_pred
 
 
+def feature_importance(model, X_test, y_test):
+    """
+    Calculate feature importance for the model.
+    
+    Parameters:
+    model: The trained model.
+    X_test (pd.DataFrame): Features in the test set.
+    y_test (pd.Series): Target variable in the test set.
+    
+    Returns:
+    pd.Series: Feature importances.
+    """
+    imp = permutation_importance(model, X_test, y_test, scoring='r2', n_repeats=10, random_state=42, n_jobs=-1)
+    return imp.importances_mean, imp.importances_std
+
+
 def plot_real_vs_predicted(y_real, y_pred, ax=None, **kwargs):
     """
     Plot real vs predicted values.
@@ -197,6 +214,8 @@ if __name__ == "__main__":
     model_evaluations_test = {}
     model_predictions_train = {'y_train': y_train}
     model_predictions_test = {'y_test': y_test}
+    model_feature_importances = {}
+    model_feature_importances_std = {}
 
     for model_name in MODEL_PARAM_GRIDS.keys():
         print(f"Training model: {model_name}")
@@ -239,6 +258,14 @@ if __name__ == "__main__":
             pickle.dump(best_model, f, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"Model saved to {model_filename}")
 
+        # Calculate feature importance
+        feature_importances, feature_importance_std = feature_importance(best_model, X_test, y_test)
+        model_feature_importances[model_name] = feature_importances
+        model_feature_importances_std[model_name] = feature_importance_std
+        print(f"Feature importances for {model_name}:")
+        for i in feature_importances.argsort()[::-1]:
+            print(f"    {X_test.columns[i]:<28}: {feature_importance[i]:.3f} ± {feature_importance_std[i]:.3f}")
+
         # Plot real vs predicted values
         ax = plot_real_vs_predicted(y_train, y_train_pred, label='Trianing Data', color='blue')
         ax = plot_real_vs_predicted(y_test, y_test_pred, ax=ax, label='Test Data', color='green')
@@ -247,14 +274,18 @@ if __name__ == "__main__":
         fig.savefig(f"../images/{model_name}_real_vs_predicted.png", dpi=300)
         print(f"Plot saved to ../images/{model_name}_real_vs_predicted.png", end='\n' + '-'*40 + '\n')
 
-    # Save the model evaluations and predictions
+    # Save the model evaluations, feature importances, and predictions
     model_evaluations_train = pd.DataFrame(model_evaluations_train)
     model_evaluations_test = pd.DataFrame(model_evaluations_test)
+    model_feature_importances = pd.DataFrame(model_feature_importances)
+    model_feature_importances_std = pd.DataFrame(model_feature_importances_std)
     model_predictions_train = pd.DataFrame(model_predictions_train)
     model_predictions_test = pd.DataFrame(model_predictions_test)
 
     model_evaluations_train.to_excel('../model_evaluations_train.xlsx')
     model_evaluations_test.to_excel('../model_evaluations_test.xlsx')
+    model_feature_importances.to_excel('../model_feature_importances.xlsx')
+    model_feature_importances_std.to_excel('../model_feature_importances_std.xlsx')
     model_predictions_train.to_excel('../model_predictions_train.xlsx')
     model_predictions_test.to_excel('../model_predictions_test.xlsx')
 
