@@ -1,0 +1,11 @@
+numpy
+scipy
+pandas
+openpyxl
+scikit-learn
+xenonpy
+rdkit
+matplotlib
+
+# optional dependencies for specific features
+mp-api
