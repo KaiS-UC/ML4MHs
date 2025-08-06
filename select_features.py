@@ -61,8 +61,8 @@ def lasso_feature_selection(X, y, **kwargs):
 
     # Perform Lasso feature selection
     lasso = LassoCV(**kwargs)
-    model = SelectFromModel(lasso, prefit=False)
-    model.fit(X_scaled, y)
+    lasso.fit(X_scaled, y)
+    model = SelectFromModel(lasso, prefit=True)
 
     # Print some information about the selected features
     X_selected = X.iloc[:, model.get_support()]
@@ -82,16 +82,16 @@ if __name__ == "__main__":
 
     # Save full dataset before feature selection
     data_full = pd.concat([compositions, X, y], axis=1)
-    data_full.to_excel(f'training_data/training_data_{target}_all-features.xlsx')
+    data_full.to_excel(f'training_data/training_data_{target}_all-features.xlsx', index=False)
     print(f"Loaded {len(compositions)} compositions with {X.shape[1]} features.")
 
     # Select features
-    X_selected = lasso_feature_selection(X, y, cv=5, alphas=np.logspace(-6, 6, 100),
+    X_selected = lasso_feature_selection(X, y, cv=5, alphas=100, #np.logspace(-6, 6, 100),
                                          max_iter=10000, random_state=42, n_jobs=-1)
 
     # Save reduced dataset
     data_reduced = pd.concat([compositions, X_selected, y], axis=1)
-    data_reduced.to_excel(f'training_data/training_data_{target}_reduced-features.xlsx')
+    data_reduced.to_excel(f'training_data/training_data_{target}_reduced-features.xlsx', index=False)
     print("The selected features are:")
     for col in X_selected.columns:
         print(f"    {col}")
@@ -103,5 +103,5 @@ if __name__ == "__main__":
 
     # Save final dataset with average hydrogenation energy
     final_data = pd.concat([compositions, X_selected, mp_avg_hydrogenation, y], axis=1)
-    final_data.to_excel(f'training_data/training_data_{target}_final-features.xlsx')
+    final_data.to_excel(f'training_data/training_data_{target}_final-features.xlsx', index=False)
     print("Final dataset with average hydrogenation energy saved.")

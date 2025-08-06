@@ -1,7 +1,6 @@
 import time
 import pickle
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import AdaBoostRegressor, GradientBoostingRegressor
@@ -14,28 +13,26 @@ from sklearn.inspection import permutation_importance
 
 MODEL_PARAM_GRIDS = {
     'adaboost': {
-        'estimator__max_depth': [1, 5, 10, 15, 20],
-        'n_estimators': [50, 100, 500, 1000, 5000, 10000, 50000, 100000],
-        'learning_rate': [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]
+        'estimator__max_depth': [3, 4, 5, 6, 7, 8, 9, 10],
+        'n_estimators': [10, 50, 100, 500, 1000, 5000, 10000],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2, 0.5, 1.0],
     },
     'gradientboost': {
-        'n_estimators': [50, 100, 200, 300, 400, 500, 800, 1200],
-        'learning_rate': [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0],
-        'max_depth': [2, 3, 4, 5, 6, 7, 8],
-        'subsample': [0.8, 0.9, 1.0]
+        'max_depth': [3, 4, 5, 6, 7, 8, 9, 10],
+        'n_estimators': [10, 50, 100, 500, 1000, 5000, 10000],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2, 0.5, 1.0],
     },
     'bayesian': {
         'alpha_1': [1e-6, 1e-5, 1e-4, 1e-3],
         'alpha_2': [1e-6, 1e-5, 1e-4, 1e-3],
         'lambda_1': [1e-6, 1e-5, 1e-4, 1e-3],
-        'lambda_2': [1e-6, 1e-5, 1e-4, 1e-3]
+        'lambda_2': [1e-6, 1e-5, 1e-4, 1e-3],
     },
     'neuralnetwork': {
-        'hidden_layer_sizes': [(50,), (100,), (50, 50), (100, 50)],
+        'hidden_layer_sizes': [(50,), (100,), (50, 50), (100, 50), (10, 10, 10)],
         'activation': ['relu', 'tanh'],
-        'solver': ['adam', 'lbfgs'],
-        'alpha': [0.0001, 0.001, 0.01],
-        'learning_rate': ['constant', 'adaptive']
+        'alpha': [1e-5, 1e-4, 0.001, 0.01, 0.1, 1.0, 10.0],
+        'learning_rate_init': [0.001, 0.01, 0.1, 1.0],
     }
 }
 
@@ -51,8 +48,8 @@ def load_data(file_path):
     pd.DataFrame: Loaded data as a DataFrame.
     """
     df = pd.read_excel(file_path)
-    df.drop(['Comp'], axis=1, inplace=True)
-    return df
+    df.drop(['Composition_Formula'], axis=1, inplace=True)
+    return df[df.notna().all(axis=1)]  # Ensure all rows are complete before returning
 
 
 def split_and_scale(X, y):
@@ -172,32 +169,10 @@ def feature_importance(model, X_test, y_test):
     return imp.importances_mean, imp.importances_std
 
 
-def plot_real_vs_predicted(y_real, y_pred, ax=None, **kwargs):
-    """
-    Plot real vs predicted values.
-    
-    Parameters:
-    y_real (pd.Series): Actual target values.
-    y_pred (np.ndarray): Predicted target values.
-    """
-    if ax is None:
-        fig, ax = plt.subplots(figsize=(8, 6))
-
-    ax.axline((0, 0), slope=1, color='red', linestyle='--')
-    ax.scatter(y_real, y_pred, **kwargs)
-    ax.set_xlabel('Actual Values', fontsize=15)
-    ax.set_ylabel('Predicted Values', fontsize=15)
-    ax.grid(True)
-    ax.legend(fontsize=13)
-    ax.tick_params(labelsize=13)
-
-    return ax
-
-
 if __name__ == "__main__":
     # script variables
-    data_file = "../Last_dataset_with_comp_heat_of_formation_output_after_removing_pressure.xlsx"  # Path to the data file
-    target = 'heat_of_formation'  # Name of the target variable column in the data file
+    target = 'Heat_of_Formation_kJperMolH2'  # Name of the target variable column in the data file
+    data_file = f"training_data/training_data_{target}_final-features.xlsx"  # Path to the data file
 
     # Load the data
     data = load_data(data_file)
@@ -253,32 +228,35 @@ if __name__ == "__main__":
         print(f"  Test RMSE: {test_scores['root_mean_squared_error']:.2f}")
 
         # Save the model
-        model_filename = f"models/{model_name}_best_model.pkl"
+        model_filename = f"models/{model_name}_{target}_best_model.pkl"
         with open(model_filename, 'wb') as f:
             pickle.dump(best_model, f, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"Model saved to {model_filename}")
 
         # Calculate feature importance
-        feature_importances, feature_importance_std = feature_importance(best_model, X_test, y_test)
+        feature_importances, feature_importances_std = feature_importance(best_model, X_test, y_test)
         model_feature_importances[model_name] = feature_importances
-        model_feature_importances_std[model_name] = feature_importance_std
+        model_feature_importances_std[model_name] = feature_importances_std
         print(f"Feature importances for {model_name}:")
         for i in feature_importances.argsort()[::-1]:
-            print(f"    {X_test.columns[i]:<28}: {feature_importance[i]:.3f} ± {feature_importance_std[i]:.3f}")
+            print(f"    {X.columns[i]:<28}: {feature_importances[i]:.3f} ± {feature_importances_std[i]:.3f}")
+
+        # Separate outputs for clarity
+        print('-' * 40)
 
     # Save the model evaluations, feature importances, and predictions
     model_evaluations_train = pd.DataFrame(model_evaluations_train)
     model_evaluations_test = pd.DataFrame(model_evaluations_test)
-    model_feature_importances = pd.DataFrame(model_feature_importances)
-    model_feature_importances_std = pd.DataFrame(model_feature_importances_std)
+    model_feature_importances = pd.DataFrame(model_feature_importances, index=X.columns)
+    model_feature_importances_std = pd.DataFrame(model_feature_importances_std, index=X.columns)
     model_predictions_train = pd.DataFrame(model_predictions_train)
     model_predictions_test = pd.DataFrame(model_predictions_test)
 
-    model_evaluations_train.to_excel('training_data/model_evaluations_train.xlsx')
-    model_evaluations_test.to_excel('training_data/model_evaluations_test.xlsx')
-    model_feature_importances.to_excel('training_data/model_feature_importances.xlsx')
-    model_feature_importances_std.to_excel('training_data/model_feature_importances_std.xlsx')
-    model_predictions_train.to_excel('training_data/model_predictions_train.xlsx')
-    model_predictions_test.to_excel('training_data/model_predictions_test.xlsx')
+    model_evaluations_train.to_excel(f'training_data/model_evaluations_train_{target}.xlsx')
+    model_evaluations_test.to_excel(f'training_data/model_evaluations_test_{target}.xlsx')
+    model_feature_importances.to_excel(f'training_data/model_feature_importances_{target}.xlsx')
+    model_feature_importances_std.to_excel(f'training_data/model_feature_importances_std_{target}.xlsx')
+    model_predictions_train.to_excel(f'training_data/model_predictions_train_{target}.xlsx')
+    model_predictions_test.to_excel(f'training_data/model_predictions_test_{target}.xlsx')
 
     print("All models trained and evaluated successfully.")
