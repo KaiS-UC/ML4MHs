@@ -5,9 +5,6 @@ import numpy as np
 from composition_parser import parse_composition
 
 
-API_KEY = "YOUR_API_KEY_HERE"  # replace with your Materials Project API key
-eV2kJ = constants.e * constants.N_A / 1000
-
 # hydrogenation data retrieved from mp on 20. Feb. 2024
 HYDROGENATION_DATA = {
     'n': {'energy': None, 'composition': None},
@@ -132,71 +129,105 @@ HYDROGENATION_DATA = {
 }
 
 
-def get_hydrogenation_energy(element):
+class MPHydrogenationEnergy:
     """
-    Function to grab hydrogenation energy from materialsproject
+    Class to handle hydrogenation energy data from Materials Project.
     """
-    # use stored results, if mp_api is not installed
-    try:
+
+    def __init__(self, api_key=None):
+        self.api_key = api_key
+        self.eV2kJ = constants.e * constants.N_A / 1000  # Conversion factor from eV to kJ/mol
+        self.hydrogenation_data = HYDROGENATION_DATA  # Use the predefined data for initialisation
+
+
+    def update_hydrogenation_data(self):
+        """
+        Update the hydrogenation data by downloading from Materials Project.
+        This method will overwrite the existing hydrogenation data.
+        """
+        if not self.api_key:
+            print("API key not provided. Cannot update hydrogenation data.")
+            return
+
+        # Fetch and update hydrogenation data for all elements
+        for element in self.hydrogenation_data.keys():
+            energy, composition = self.get_hydrogenation_energy(element)
+            self.hydrogenation_data[element] = {
+                "energy": energy,
+                "composition": composition
+            }
+
+
+    def get_hydrogenation_energy(self, element):
+        """
+        Function to grab hydrogenation energy from materialsproject.
+        """
+        if not self.api_key:
+            # return stored results
+            energy = self.hydrogenation_data[element]["energy"]
+            composition = self.hydrogenation_data[element]["composition"]
+            return energy, composition
+
+        # get all relevant entries
         from mp_api.client import MPRester
-    except ImportError:
-        energy = HYDROGENATION_DATA[element]["energy"]
-        composition = HYDROGENATION_DATA[element]["composition"]
-        return energy, composition
+        with MPRester(self.api_key) as mpr:
+            docs = mpr.materials.summary.search(chemsys=f"{element}-H",
+                                                fields=["formation_energy_per_atom",
+                                                        "composition"])
 
-    # get all relevant entries
-    with MPRester(API_KEY) as mpr:
-        docs = mpr.materials.summary.search(chemsys=f"{element}-H",
-                                            fields=["formation_energy_per_atom",
-                                                    "composition"])
+        # calculate formation energy per mole of H2 (in kJ/(mol H2))
+        energies = []
+        compositions = []
+        for doc in docs:
+            E_tot = doc.formation_energy_per_atom * doc.composition.num_atoms
+            E_H2  = E_tot / (doc.composition.get("H") / 2)
+            E_H2_kJ = self.eV2kJ * E_H2
+            energies.append(E_H2_kJ)
+            compositions.append(doc.composition.to_pretty_string())
 
-    # calculate formation energy per mole of H2 (in kJ/(mol H2))
-    energies = []
-    compositions = []
-    for doc in docs:
-        E_tot = doc.formation_energy_per_atom * doc.composition.num_atoms
-        E_H2  = E_tot / (doc.composition.get("H") / 2)
-        E_H2_kJ = eV2kJ * E_H2
-        energies.append(E_H2_kJ)
-        compositions.append(doc.composition.to_pretty_string())
+        # select composition with lowest hydrogenation energy
+        if len(energies) > 0:
+            hydrogenation_energy = np.amin(energies)
+            composition = compositions[np.argmin(energies)]
+        else:
+            hydrogenation_energy = None
+            composition = None
 
-    # select composition with lowest hydrogenation energy
-    if len(energies) > 0:
-        hydrogenation_energy = np.amin(energies)
-        composition = compositions[np.argmin(energies)]
-    else:
-        hydrogenation_energy = None
-        composition = None
-    return hydrogenation_energy, composition
+        # update the hydrogenation data
+        self.hydrogenation_data[element] = {
+            "energy": hydrogenation_energy,
+            "composition": composition
+        }
+        return hydrogenation_energy, composition
 
 
-def get_average_hydrogenation_energy(composition):
-    """
-    Calculate average hydrogenation energy of an alloy from elemental
-    hydrogenation energy weighted by atomic fraction.
-    """
-    try:
-        # parse composition
-        comp_dict = parse_composition(composition)
-    except TypeError:
-        # maybe list or other iterable of compositions?
+    def get_average_hydrogenation_energy(self, composition):
+        """
+        Calculate average hydrogenation energy of an alloy from elemental
+        hydrogenation energy weighted by atomic fraction.
+        """
         try:
-            avg = [get_average_hydrogenation_energy(comp) for comp in composition]
-            return avg
+            # parse composition
+            comp_dict = parse_composition(composition)
         except TypeError:
-            print("Unable to parse composition", composition)
-            return None
+            # maybe list or other iterable of compositions?
+            try:
+                avg = [self.get_average_hydrogenation_energy(comp) for comp in composition]
+                return avg
+            except TypeError:
+                print("Unable to parse composition", composition)
+                return None
 
-    # calculate weighted sum
-    weighted_sum = 0
-    for key in comp_dict.keys():
-        # return None if no energy in dataset (otherwise error)
-        if HYDROGENATION_DATA[key]["energy"] is None:
-            return None
-        # add to weighted sum
-        weighted_sum += comp_dict[key] * HYDROGENATION_DATA[key]["energy"]
+        # calculate weighted sum
+        weighted_sum = 0
+        for key in comp_dict.keys():
+            # return None if no energy in dataset (otherwise error)
+            if self.hydrogenation_data[key]["energy"] is None:
+                return None
+            # add to weighted sum
+            weighted_sum += comp_dict[key] * self.hydrogenation_data[key]["energy"]
 
-    # normalize weights -> weighted average
-    avg = weighted_sum / np.sum([v for v in comp_dict.values()])
+        # normalize weights -> weighted average
+        avg = weighted_sum / np.sum([v for v in comp_dict.values()])
 
-    return avg
+        return avg

@@ -3,6 +3,7 @@ import numpy as np
 from xenonpy.datatools import preset
 from xenonpy.descriptor import Compositions
 from composition_parser import parse_composition
+from mp_hydrogenation_energy import MPHydrogenationEnergy
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import LassoCV
@@ -91,7 +92,16 @@ if __name__ == "__main__":
     # Save reduced dataset
     data_reduced = pd.concat([compositions, X_selected, y], axis=1)
     data_reduced.to_excel(f'training_data/training_data_{target}_reduced-features.xlsx')
-    print(f"Reduced dataset saved with {X_selected.shape[1]} features.")
     print("The selected features are:")
     for col in X_selected.columns:
         print(f"    {col}")
+
+    # Add average hydrogenation energy (from materialsproject data) as a feature
+    mp_data = MPHydrogenationEnergy()
+    mp_avg_hydrogenation = mp_data.get_average_hydrogenation_energy(compositions)
+    mp_avg_hydrogenation = pd.Series(mp_avg_hydrogenation, name='average_hydrogenation_energy')
+
+    # Save final dataset with average hydrogenation energy
+    final_data = pd.concat([compositions, X_selected, mp_avg_hydrogenation, y], axis=1)
+    final_data.to_excel(f'training_data/training_data_{target}_final-features.xlsx')
+    print("Final dataset with average hydrogenation energy saved.")
