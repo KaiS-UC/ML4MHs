@@ -75,6 +75,7 @@ def lasso_feature_selection(X, y, **kwargs):
 if __name__ == "__main__":
     datafile = 'training_data/ML_HYDPARK_v5.csv'
     target = 'LnEquilibrium_Pressure_25C'
+    MP_API_KEY = None  # Replace with your Materials Project API key if needed
 
     # Load dataset
     preset.sync('elements_completed')
@@ -97,7 +98,8 @@ if __name__ == "__main__":
         print(f"    {col}")
 
     # Add average hydrogenation energy (from materialsproject data) as a feature
-    mp_data = MPHydrogenationEnergy()
+    mp_data = MPHydrogenationEnergy(api_key=MP_API_KEY)
+    mp_data.update_hydrogenation_data()
     mp_avg_hydrogenation = mp_data.get_average_hydrogenation_energy(compositions)
     mp_avg_hydrogenation = pd.Series(mp_avg_hydrogenation, name='average_hydrogenation_energy')
 
