@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
 import re
-#import periodictable
-
-
-FORMULA_RE = r'([A-Z][a-z]?)|(\.\d+)|(\d+\.\d+)|(\d+)|(\(.*\))'
-#MASSES = {el.symbol: el.mass for el in periodictable.elements}
 
 
 def parse_composition(s):
@@ -14,25 +9,21 @@ def parse_composition(s):
     the chemical elements in the string and their amounts as key-value
     pairs.
     """
-    # split up into components
-    formula = [m.group() for m in re.finditer(FORMULA_RE, s)
-               if re.finditer(FORMULA_RE, s)]
 
-    # iterate through components and add to resulting dictionary
-    result = {}
-    i = 0
-    while i < len(formula):
-        element = formula[i]
+    # regular expression for parsing a composition string
+    #   case 1: bracket with number after it: (A2B)2
+    #   case 2: element with number after it: Aa2
+    # composition strings **cannot** be nested, e.g. (A2(B3C)2)2
+    FORMULA_RE = r'([A-Z][a-z]?|\(.*?\))(\d*\.?\d*)'
 
-        # find out number first
-        try:
-            # element has number attached to it
-            num = float(formula[i+1])
-            i += 2
-        except (ValueError, IndexError):
-            # no number attached - assumed to be 1
+    # iterate through matches and build dictionary
+    composition = {}
+    for element, num in re.findall(FORMULA_RE, s):
+        # convert number to float, default to 1 if no number is present
+        if num == '':
             num = 1.0
-            i += 1
+        else:
+            num = float(num)
 
         # check if element is subformula in brackets
         if element[0] == "(" and element[-1] == ")":
@@ -47,27 +38,13 @@ def parse_composition(s):
 
         # add to result
         for key in el_dict:
-            if key in result.keys():
-                result[key] += el_dict[key]
+            if key in composition.keys():
+                composition[key] += el_dict[key]
             else:
-                result[key] = el_dict[key]
+                composition[key] = el_dict[key]
 
     # return dictionary
-    return result
-
-
-# def mass_per_atom(s):
-#     """
-#     This function calculates the mass per atom of a given composition string
-#     """
-#     # get weights from composition parser
-#     weights = parse_composition(s)
-
-#     # calculate total mass and normalize by number of atoms
-#     mass = sum([weights[el]*MASSES[el] for el in weights.keys()])
-#     mpa = mass / sum(weights.values())
-
-#     return mpa
+    return composition
 
 
 if __name__ == "__main__":
@@ -75,4 +52,3 @@ if __name__ == "__main__":
     comp = sys.argv[1]
     print(f"Parsing composition string: {comp}")
     print(parse_composition(comp))
-#    print(f"Average mass per atom: {mass_per_atom(comp)}")
