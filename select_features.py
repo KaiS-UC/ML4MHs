@@ -6,7 +6,7 @@ from composition_parser import parse_composition
 from mp_hydrogenation_energy import MPHydrogenationEnergy
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel
-from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LassoCV, MultiTaskLassoCV
 
 
 def load_dataset(file_path, target=None):
@@ -50,7 +50,7 @@ def lasso_feature_selection(X, y, **kwargs):
     
     Parameters:
     X (pd.DataFrame): DataFrame of features.
-    y (pd.Series): Target variable.
+    y (pd.Series): Target variable(s).
     
     Returns:
     pd.DataFrame: DataFrame of selected features.
@@ -60,7 +60,10 @@ def lasso_feature_selection(X, y, **kwargs):
     X_scaled = scaler.fit_transform(X)
 
     # Perform Lasso feature selection
-    lasso = LassoCV(**kwargs)
+    if y.ndim > 1 and y.shape[1] > 1:
+        lasso = MultiTaskLassoCV(**kwargs)
+    else:
+        lasso = LassoCV(**kwargs)
     lasso.fit(X_scaled, y)
     model = SelectFromModel(lasso, prefit=True)
 
@@ -73,37 +76,58 @@ def lasso_feature_selection(X, y, **kwargs):
 
 
 if __name__ == "__main__":
-    datafile = 'training_data/ML_HYDPARK_v5.csv'
-    target = 'LnEquilibrium_Pressure_25C'
+    datafile = 'training_data/ML-HYDPARK_v0.0.5.csv'
+    targets = ['Heat_of_Formation_kJperMolH2', 'LnEquilibrium_Pressure_25C']
     MP_API_KEY = None  # Replace with your Materials Project API key if needed
 
     # Load dataset
     preset.sync('elements_completed')
-    compositions, X, y = load_dataset(datafile, target)
+    compositions, X, y = load_dataset(datafile, targets)
 
-    # Save full dataset before feature selection
-    data_full = pd.concat([compositions, X, y], axis=1)
-    data_full.to_excel(f'training_data/training_data_{target}_all-features.xlsx', index=False)
-    print(f"Loaded {len(compositions)} compositions with {X.shape[1]} features.")
-
-    # Select features
-    X_selected = lasso_feature_selection(X, y, cv=5, alphas=100, #np.logspace(-6, 6, 100),
-                                         max_iter=10000, random_state=42, n_jobs=-1)
-
-    # Save reduced dataset
-    data_reduced = pd.concat([compositions, X_selected, y], axis=1)
-    data_reduced.to_excel(f'training_data/training_data_{target}_reduced-features.xlsx', index=False)
-    print("The selected features are:")
-    for col in X_selected.columns:
-        print(f"    {col}")
-
-    # Add average hydrogenation energy (from materialsproject data) as a feature
+    # Load average hydrogenation energy (from materialsproject data)
     mp_data = MPHydrogenationEnergy(api_key=MP_API_KEY)
     mp_data.update_hydrogenation_data()
     mp_avg_hydrogenation = mp_data.get_average_hydrogenation_energy(compositions)
     mp_avg_hydrogenation = pd.Series(mp_avg_hydrogenation, name='average_hydrogenation_energy')
 
-    # Save final dataset with average hydrogenation energy
-    final_data = pd.concat([compositions, X_selected, mp_avg_hydrogenation, y], axis=1)
-    final_data.to_excel(f'training_data/training_data_{target}_final-features.xlsx', index=False)
-    print("Final dataset with average hydrogenation energy saved.")
+    # Save full dataset before feature selection
+    data_full = pd.concat([compositions, X, y], axis=1)
+    data_full.to_excel(f'training_data/training_data_full.xlsx', index=False)
+    print(f"Loaded {len(compositions)} compositions with {X.shape[1]} features.")
+
+    # Select features for each target separately
+    X_common = X.copy()  # Keep copy for tracking common features across targets
+    for target in targets:
+        print(f"\nPerforming feature selection for target: {target}")
+        y_target = y[target]
+        X_selected = lasso_feature_selection(X, y_target, cv=5, alphas=100, #np.logspace(-6, 6, 100),
+                                             max_iter=10000, random_state=42, n_jobs=-1)
+
+        # Reduce common features across targets accordingly
+        X_common = X_common[X_selected.columns.intersection(X_common.columns)]
+
+        # Save reduced dataset
+        data_reduced = pd.concat([compositions, X_selected, mp_avg_hydrogenation, y], axis=1)
+        data_reduced.to_excel(f'training_data/training_data_{target}_reduced-features.xlsx', index=False)
+        print("The selected features are:")
+        for col in X_selected.columns:
+            print(f"    {col}")
+
+    # Save dataset with common features across all targets
+    data_common = pd.concat([compositions, X_common, mp_avg_hydrogenation, y], axis=1)
+    data_common.to_excel(f'training_data/training_data_all-targets_common-features.xlsx', index=False)
+    print("\nThe common features across all targets are:")
+    for col in X_common.columns:
+        print(f"    {col}")
+
+    # Select features for both targets together
+    print("\nPerforming feature selection for all targets together.")
+    X_selected = lasso_feature_selection(X, y, cv=5, alphas=100, #np.logspace(-6, 6, 100),
+                                         max_iter=10000, random_state=42, n_jobs=-1)
+
+    # Save reduced dataset
+    data_reduced = pd.concat([compositions, X_selected, mp_avg_hydrogenation, y], axis=1)
+    data_reduced.to_excel(f'training_data/training_data_all-targets_reduced-features.xlsx', index=False)
+    print("The selected features are:")
+    for col in X_selected.columns:
+        print(f"    {col}")
