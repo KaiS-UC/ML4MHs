@@ -39,7 +39,7 @@ MODEL_PARAM_GRIDS = {
 
 def load_data(file_path):
     """
-    Load data from an excel file, but drop the composition column (Comp).
+    Load data from an excel file, but drop the composition column.
     
     Parameters:
     file_path (str): Path to the excel file.
@@ -170,93 +170,115 @@ def feature_importance(model, X_test, y_test):
 
 
 if __name__ == "__main__":
-    # script variables
-    target = 'Heat_of_Formation_kJperMolH2'  # Name of the target variable column in the data file
-    data_file = f"training_data/training_data_{target}_final-features.xlsx"  # Path to the data file
+    # Define targets and datasets to work on
+    targets = [
+        'Heat_of_Formation_kJperMolH2',
+        'LnEquilibrium_Pressure_25C'
+    ]
 
-    # Load the data
-    data = load_data(data_file)
+    training_datasets = [f"{target}_reduced-features" for target in targets] + [
+            'all-targets_reduced-features',
+            'all-targets_common-features'
+            ]
+
+    for dataset in training_datasets:
+        # Determine the target based on the dataset name
+        if 'Heat_of_Formation_kJperMolH2' in dataset:
+            target = ['Heat_of_Formation_kJperMolH2']
+        elif 'LnEquilibrium_Pressure_25C' in dataset:
+            target = ['LnEquilibrium_Pressure_25C']
+        else:
+            target = targets  # For datasets that don't correspond to a single target
+
+        # Load the training data
+        data_file = f'training_data/training_data_{dataset}.xlsx'
+        data = load_data(data_file)
+
+        # Separate features
+        X = data.drop(target, axis=1)
+
+        for t in target:
+            # Separate outputs for clarity
+            print('-' * 40)
+            print(f"Training models for target: {t} using dataset: {dataset}")
+            y = data[t]
+
+            # Split and scale the data
+            X_train, X_test, y_train, y_test = split_and_scale(X, y)
     
-    # Separate features and target variable
-    X = data.drop(target, axis=1)
-    y = data[target]
-    
-    # Split and scale the data
-    X_train, X_test, y_train, y_test = split_and_scale(X, y)
-    
-    # train all available models
-    model_evaluations_train = {}
-    model_evaluations_test = {}
-    model_predictions_train = {'y_train': y_train}
-    model_predictions_test = {'y_test': y_test}
-    model_feature_importances = {}
-    model_feature_importances_std = {}
+            # train all available models
+            model_evaluations_train = {}
+            model_evaluations_test = {}
+            model_predictions_train = {'y_train': y_train}
+            model_predictions_test = {'y_test': y_test}
+            model_feature_importances = {}
+            model_feature_importances_std = {}
 
-    for model_name in MODEL_PARAM_GRIDS.keys():
-        print(f"Training model: {model_name}")
+            for model_name in MODEL_PARAM_GRIDS.keys():
+                print(f"Training model: {model_name}")
 
-        # Get the base model and parameter grid
-        base_model, param_grid = get_base_model(model_name)
-    
-        # Start timing the training process
-        t0 = time.time()
+                # Get the base model and parameter grid
+                base_model, param_grid = get_base_model(model_name)
+            
+                # Start timing the training process
+                t0 = time.time()
 
-        # Train the model
-        best_model = train_model(X_train, y_train, base_model, param_grid, cv=5, scoring='r2')
+                # Train the model
+                best_model = train_model(X_train, y_train, base_model, param_grid, cv=5, scoring='r2')
 
-        # End timing the training process
-        t1 = time.time()
-        print(f"Training time for {model_name}: {time.strftime('%H:%M:%S', time.gmtime(t1 - t0))}")
-    
-        # Evaluate the model
-        train_scores, y_train_pred = evaluate_model(best_model, X_train, y_train)
-        test_scores, y_test_pred = evaluate_model(best_model, X_test, y_test)
+                # End timing the training process
+                t1 = time.time()
+                print(f"Training time for {model_name}: {time.strftime('%H:%M:%S', time.gmtime(t1 - t0))}")
+            
+                # Evaluate the model
+                train_scores, y_train_pred = evaluate_model(best_model, X_train, y_train)
+                test_scores, y_test_pred = evaluate_model(best_model, X_test, y_test)
 
-        # save results
-        model_evaluations_train[model_name] = train_scores
-        model_evaluations_test[model_name] = test_scores
-        model_predictions_train[model_name] = y_train_pred
-        model_predictions_test[model_name] = y_test_pred
+                # save results
+                model_evaluations_train[model_name] = train_scores
+                model_evaluations_test[model_name] = test_scores
+                model_predictions_train[model_name] = y_train_pred
+                model_predictions_test[model_name] = y_test_pred
 
-        # print results
-        print(f"Evaluation scores for {model_name}:")
-        print(f"  Training R^2: {train_scores['r2_score']:.2f}")
-        print(f"  Test R^2: {test_scores['r2_score']:.2f}")
-        print(f"  Training MAE: {train_scores['mean_absolute_error']:.2f}")
-        print(f"  Test MAE: {test_scores['mean_absolute_error']:.2f}")
-        print(f"  Training RMSE: {train_scores['root_mean_squared_error']:.2f}")
-        print(f"  Test RMSE: {test_scores['root_mean_squared_error']:.2f}")
+                # print results
+                print(f"Evaluation scores for {model_name}:")
+                print(f"  Training R^2: {train_scores['r2_score']:.2f}")
+                print(f"  Test R^2: {test_scores['r2_score']:.2f}")
+                print(f"  Training MAE: {train_scores['mean_absolute_error']:.2f}")
+                print(f"  Test MAE: {test_scores['mean_absolute_error']:.2f}")
+                print(f"  Training RMSE: {train_scores['root_mean_squared_error']:.2f}")
+                print(f"  Test RMSE: {test_scores['root_mean_squared_error']:.2f}")
 
-        # Save the model
-        model_filename = f"models/{model_name}_{target}_best_model.pkl"
-        with open(model_filename, 'wb') as f:
-            pickle.dump(best_model, f, protocol=pickle.HIGHEST_PROTOCOL)
-        print(f"Model saved to {model_filename}")
+                # Save the model
+                model_filename = f"models/{dataset}_{t}_{model_name}.pkl"
+                with open(model_filename, 'wb') as f:
+                    pickle.dump(best_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+                print(f"Model saved to {model_filename}")
 
-        # Calculate feature importance
-        feature_importances, feature_importances_std = feature_importance(best_model, X_test, y_test)
-        model_feature_importances[model_name] = feature_importances
-        model_feature_importances_std[model_name] = feature_importances_std
-        print(f"Feature importances for {model_name}:")
-        for i in feature_importances.argsort()[::-1]:
-            print(f"    {X.columns[i]:<28}: {feature_importances[i]:.3f} ± {feature_importances_std[i]:.3f}")
+                # Calculate feature importance
+                feature_importances, feature_importances_std = feature_importance(best_model, X_test, y_test)
+                model_feature_importances[model_name] = feature_importances
+                model_feature_importances_std[model_name] = feature_importances_std
+                print(f"Feature importances for {model_name}:")
+                for i in feature_importances.argsort()[::-1]:
+                    print(f"    {X.columns[i]:<28}: {feature_importances[i]:.3f} ± {feature_importances_std[i]:.3f}")
 
-        # Separate outputs for clarity
-        print('-' * 40)
+                # Separate outputs for clarity
+                print('-' * 40)
 
-    # Save the model evaluations, feature importances, and predictions
-    model_evaluations_train = pd.DataFrame(model_evaluations_train)
-    model_evaluations_test = pd.DataFrame(model_evaluations_test)
-    model_feature_importances = pd.DataFrame(model_feature_importances, index=X.columns)
-    model_feature_importances_std = pd.DataFrame(model_feature_importances_std, index=X.columns)
-    model_predictions_train = pd.DataFrame(model_predictions_train)
-    model_predictions_test = pd.DataFrame(model_predictions_test)
+            # Save the model evaluations, feature importances, and predictions
+            model_evaluations_train = pd.DataFrame(model_evaluations_train)
+            model_evaluations_test = pd.DataFrame(model_evaluations_test)
+            model_feature_importances = pd.DataFrame(model_feature_importances, index=X.columns)
+            model_feature_importances_std = pd.DataFrame(model_feature_importances_std, index=X.columns)
+            model_predictions_train = pd.DataFrame(model_predictions_train)
+            model_predictions_test = pd.DataFrame(model_predictions_test)
 
-    model_evaluations_train.to_excel(f'training_data/model_evaluations_train_{target}.xlsx')
-    model_evaluations_test.to_excel(f'training_data/model_evaluations_test_{target}.xlsx')
-    model_feature_importances.to_excel(f'training_data/model_feature_importances_{target}.xlsx')
-    model_feature_importances_std.to_excel(f'training_data/model_feature_importances_std_{target}.xlsx')
-    model_predictions_train.to_excel(f'training_data/model_predictions_train_{target}.xlsx')
-    model_predictions_test.to_excel(f'training_data/model_predictions_test_{target}.xlsx')
+            model_evaluations_train.to_excel(f'training_data/scores_train_{dataset}_{t}.xlsx')
+            model_evaluations_test.to_excel(f'training_data/scores_test_{dataset}_{t}.xlsx')
+            model_feature_importances.to_excel(f'training_data/importances_{dataset}_{t}.xlsx')
+            model_feature_importances_std.to_excel(f'training_data/importances_std_{dataset}_{t}.xlsx')
+            model_predictions_train.to_excel(f'training_data/predictions_train_{dataset}_{t}.xlsx')
+            model_predictions_test.to_excel(f'training_data/predictions_test_{dataset}_{t}.xlsx')
 
-    print("All models trained and evaluated successfully.")
+            print("All models trained and evaluated successfully.")
