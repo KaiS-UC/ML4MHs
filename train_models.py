@@ -1,5 +1,4 @@
 import time
-import pickle
 import pandas as pd
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -9,6 +8,7 @@ from sklearn.linear_model import BayesianRidge
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, root_mean_squared_error
 from sklearn.inspection import permutation_importance
+import skl2onnx
 
 
 MODEL_PARAM_GRIDS = {
@@ -250,9 +250,10 @@ if __name__ == "__main__":
                 print(f"  Test RMSE: {test_scores['root_mean_squared_error']:.2f}")
 
                 # Save the model
-                model_filename = f"models/{dataset}_{t}_{model_name}.pkl"
+                onx = skl2onnx.to_onnx(best_model, X_train[:1])
+                model_filename = f"models/{dataset}_{t}_{model_name}.onnx"
                 with open(model_filename, 'wb') as f:
-                    pickle.dump(best_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+                    f.write(onx.SerializeToString())
                 print(f"Model saved to {model_filename}")
 
                 # Calculate feature importance
