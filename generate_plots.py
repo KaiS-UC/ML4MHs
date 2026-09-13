@@ -57,7 +57,8 @@ def plot_feature_correlations(data, ax=None, **kwargs):
     ax.xaxis.set_ticks_position('bottom')
     ax.set_xticks(np.arange(len(data.columns)))
     ax.set_yticks(np.arange(len(data.columns)))
-    labels = [FEATURE_NAMES[col] for col in data.columns]
+    #labels = [FEATURE_NAMES[col] for col in data.columns]
+    labels = [col for col in data.columns]
     ax.set_xticklabels(labels, rotation=90, fontsize=13)
     ax.set_yticklabels(labels, fontsize=13)
 
@@ -144,58 +145,74 @@ def plot_feature_importance(feature_names, feature_importances, feature_importan
 
 
 if __name__ == "__main__":
-    for target in ['Heat_of_Formation_kJperMolH2', 'LnEquilibrium_Pressure_25C']:
-        # Plot feature correlations in the training data
-        training_data = pd.read_excel(f'training_data/training_data_{target}_final-features.xlsx')
+    # List of targets
+    targets = [
+        'Heat_of_Formation_kJperMolH2',
+        'LnEquilibrium_Pressure_25C'
+    ]
+
+    # List of trainingdatasets
+    training_datasets = [
+        'Heat_of_Formation_kJperMolH2_reduced-features',
+        'LnEquilibrium_Pressure_25C_reduced-features',
+        'all-targets_reduced-features',
+        'all-targets_common-features'
+        ]
+
+    for dataset in training_datasets:
+        # Load training data
+        training_data = pd.read_excel(f'training_data/training_data_{dataset}.xlsx')
         training_data.drop('Composition_Formula', axis=1, inplace=True)
+
+        # Plot feature correlations
         ax = plot_feature_correlations(training_data)
         fig = ax.get_figure()
         fig.tight_layout()
-        fig.savefig(f"images/feature_correlations_{target}.png", dpi=300)
-        print(f"Plot saved to ./images/feature_correlations_{target}.png", end='\n' + '-'*40 + '\n')
+
+        # Save the plot
+        fig.savefig(f"images/feature_correlations_{dataset}.png", dpi=300)
+        print(f"Plot saved to ./images/feature_correlations_{dataset}.png", end='\n' + '-'*40 + '\n')
         plt.close(fig)
 
-        # Plot evaluation metrics
-        for dataset in ['train', 'test']:
-            model_evaluations = pd.read_excel(f'models/model_evaluations_{dataset}_{target}.xlsx')
-            for i in range(len(model_evaluations.iloc[:, 0])):
-                metric_name = model_evaluations.iloc[i, 0]
-                values = model_evaluations.iloc[i, 1:]
-                ax = plot_evaluation_metric(model_evaluations.columns[1:], values, metric_name=metric_name)
+        # Determine the target based on the dataset name
+        if 'Heat_of_Formation_kJperMolH2' in dataset:
+            target = ['Heat_of_Formation_kJperMolH2']
+        elif 'LnEquilibrium_Pressure_25C' in dataset:
+            target = ['LnEquilibrium_Pressure_25C']
+        else:
+            target = targets  # For datasets that don't correspond to a single target
+
+        for t in target:
+            # Load predictions from training workflow
+            model_predictions_train = pd.read_excel(f'models/predictions_train_{dataset}_{t}.xlsx')
+            model_predictions_test = pd.read_excel(f'models/predictions_test_{dataset}_{t}.xlsx')
+
+            # Load feature importance data
+            model_feature_importances = pd.read_excel(f'models/importances_{dataset}_{t}.xlsx')
+            model_feature_importances_std = pd.read_excel(f'models/importances_std_{dataset}_{t}.xlsx')
+
+            for model_name in model_predictions_train.columns[1:]:
+                # Plot real vs predicted values
+                y_train = model_predictions_train['y_train']
+                y_train_pred = model_predictions_train[model_name]
+                y_test = model_predictions_test['y_test']
+                y_test_pred = model_predictions_test[model_name]
+
+                ax = plot_real_vs_predicted(y_train, y_train_pred, label='Training Data', color='blue')
+                ax = plot_real_vs_predicted(y_test, y_test_pred, ax=ax, label='Test Data', color='green')
                 fig = ax.get_figure()
                 fig.tight_layout()
-                fig.savefig(f"images/{target}_model-evaluation_{metric_name}_{dataset}.png", dpi=300)
-                print(f"Plot saved to ./images/{target}_model-evaluation_{metric_name}_{dataset}.png", end='\n' + '-'*40 + '\n')
+                fig.savefig(f"images/{dataset}_{t}_real_vs_predicted_{model_name}.png", dpi=300)
+                print(f"Plot saved to ./images/{dataset}_{t}_real_vs_predicted_{model_name}.png", end='\n' + '-'*40 + '\n')
                 plt.close(fig)
 
-        # Load other data from training workflow
-        model_feature_importances = pd.read_excel(f'models/model_feature_importances_{target}.xlsx')
-        model_feature_importances_std = pd.read_excel(f'models/model_feature_importances_std_{target}.xlsx')
-        model_predictions_train = pd.read_excel(f'models/model_predictions_train_{target}.xlsx')
-        model_predictions_test = pd.read_excel(f'models/model_predictions_test_{target}.xlsx')
-
-        for model_name in ['adaboost', 'gradientboost', 'bayesian', 'neuralnetwork']:
-            # Plot real vs predicted values
-            y_train = model_predictions_train['y_train']
-            y_train_pred = model_predictions_train[model_name]
-            y_test = model_predictions_test['y_test']
-            y_test_pred = model_predictions_test[model_name]
-
-            ax = plot_real_vs_predicted(y_train, y_train_pred, label='Training Data', color='blue')
-            ax = plot_real_vs_predicted(y_test, y_test_pred, ax=ax, label='Test Data', color='green')
-            fig = ax.get_figure()
-            fig.tight_layout()
-            fig.savefig(f"images/{model_name}_{target}_real_vs_predicted.png", dpi=300)
-            print(f"Plot saved to ./images/{model_name}_{target}_real_vs_predicted.png", end='\n' + '-'*40 + '\n')
-            plt.close(fig)
-
-            # Plot feature importance
-            feature_names = model_feature_importances.iloc[:, 0]
-            feature_importances = model_feature_importances[model_name]
-            feature_importances_std = model_feature_importances_std[model_name]
-            ax = plot_feature_importance(feature_names, feature_importances, feature_importances_std)
-            fig = ax.get_figure()
-            fig.tight_layout()
-            fig.savefig(f"images/{model_name}_{target}_feature_importance.png", dpi=300)
-            print(f"Plot saved to ./images/{model_name}_{target}_feature_importance.png", end='\n' + '-'*40 + '\n')
-            plt.close(fig)
+                # Plot feature importance
+                feature_names = model_feature_importances.iloc[:, 0]
+                feature_importances = model_feature_importances[model_name]
+                feature_importances_std = model_feature_importances_std[model_name]
+                ax = plot_feature_importance(feature_names, feature_importances, feature_importances_std)
+                fig = ax.get_figure()
+                fig.tight_layout()
+                fig.savefig(f"images/{dataset}_{t}_feature_importance_{model_name}.png", dpi=300)
+                print(f"Plot saved to ./images/{dataset}_{t}_feature_importance_{model_name}.png", end='\n' + '-'*40 + '\n')
+                plt.close(fig)
