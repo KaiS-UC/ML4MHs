@@ -1,0 +1,150 @@
+----------------------------------------
+Training models for target: Heat_of_Formation_kJperMolH2 using dataset: all-targets_minimal-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 8, 'learning_rate': 0.01, 'n_estimators': 10}
+Training time for adaboost: 00:06:02
+Evaluation scores for adaboost:
+  Training R^2: 0.91
+  Test R^2: 0.56
+  Training MAE: 3.00
+  Test MAE: 6.19
+  Training RMSE: 5.98
+  Test RMSE: 10.48
+Model saved to models/all-targets_minimal-features_Heat_of_Formation_kJperMolH2_adaboost.onnx
+Feature importances for adaboost:
+    ave:gs_est_bcc_latcnt       : 0.497 ± 0.114
+    ave:sound_velocity          : 0.358 ± 0.080
+    average_hydrogenation_energy: 0.150 ± 0.032
+    var:gs_mag_moment           : 0.105 ± 0.030
+    var:gs_energy               : 0.080 ± 0.083
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.05, 'max_depth': 8, 'n_estimators': 50}
+Training time for gradientboost: 00:06:30
+Evaluation scores for gradientboost:
+  Training R^2: 0.98
+  Test R^2: 0.79
+  Training MAE: 2.01
+  Test MAE: 5.05
+  Training RMSE: 2.79
+  Test RMSE: 7.31
+Model saved to models/all-targets_minimal-features_Heat_of_Formation_kJperMolH2_gradientboost.onnx
+Feature importances for gradientboost:
+    ave:gs_est_bcc_latcnt       : 0.696 ± 0.125
+    var:gs_mag_moment           : 0.624 ± 0.155
+    ave:sound_velocity          : 0.358 ± 0.054
+    average_hydrogenation_energy: 0.264 ± 0.045
+    var:gs_energy               : 0.139 ± 0.092
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 1e-06, 'alpha_2': 0.001, 'lambda_1': 0.001, 'lambda_2': 1e-06}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.58
+  Test R^2: 0.18
+  Training MAE: 8.22
+  Test MAE: 9.35
+  Training RMSE: 12.84
+  Test RMSE: 14.34
+Model saved to models/all-targets_minimal-features_Heat_of_Formation_kJperMolH2_bayesian.onnx
+Feature importances for bayesian:
+    ave:gs_est_bcc_latcnt       : 0.316 ± 0.095
+    var:gs_mag_moment           : 0.086 ± 0.031
+    average_hydrogenation_energy: 0.080 ± 0.049
+    var:gs_energy               : 0.050 ± 0.018
+    ave:sound_velocity          : -0.045 ± 0.027
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 1.0, 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:03:42
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.74
+  Test R^2: 0.19
+  Training MAE: 6.29
+  Test MAE: 8.25
+  Training RMSE: 10.14
+  Test RMSE: 14.26
+Model saved to models/all-targets_minimal-features_Heat_of_Formation_kJperMolH2_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    ave:gs_est_bcc_latcnt       : 0.643 ± 0.113
+    ave:sound_velocity          : 0.467 ± 0.132
+    average_hydrogenation_energy: 0.176 ± 0.093
+    var:gs_mag_moment           : 0.123 ± 0.031
+    var:gs_energy               : 0.108 ± 0.045
+----------------------------------------
+All models trained and evaluated successfully.
+----------------------------------------
+Training models for target: LnEquilibrium_Pressure_25C using dataset: all-targets_minimal-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 6, 'learning_rate': 0.01, 'n_estimators': 50}
+Training time for adaboost: 00:05:47
+Evaluation scores for adaboost:
+  Training R^2: 0.95
+  Test R^2: 0.73
+  Training MAE: 1.15
+  Test MAE: 1.65
+  Training RMSE: 1.59
+  Test RMSE: 2.99
+Model saved to models/all-targets_minimal-features_LnEquilibrium_Pressure_25C_adaboost.onnx
+Feature importances for adaboost:
+    ave:gs_est_bcc_latcnt       : 0.916 ± 0.136
+    average_hydrogenation_energy: 0.163 ± 0.019
+    var:gs_mag_moment           : 0.150 ± 0.015
+    ave:sound_velocity          : 0.106 ± 0.054
+    var:gs_energy               : 0.031 ± 0.014
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.01, 'max_depth': 5, 'n_estimators': 1000}
+Training time for gradientboost: 00:06:43
+Evaluation scores for gradientboost:
+  Training R^2: 0.99
+  Test R^2: 0.66
+  Training MAE: 0.49
+  Test MAE: 1.49
+  Training RMSE: 0.66
+  Test RMSE: 3.32
+Model saved to models/all-targets_minimal-features_LnEquilibrium_Pressure_25C_gradientboost.onnx
+Feature importances for gradientboost:
+    ave:gs_est_bcc_latcnt       : 0.553 ± 0.091
+    var:gs_mag_moment           : 0.259 ± 0.088
+    average_hydrogenation_energy: 0.120 ± 0.014
+    ave:sound_velocity          : 0.112 ± 0.027
+    var:gs_energy               : 0.017 ± 0.030
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 1e-06, 'alpha_2': 0.001, 'lambda_1': 0.001, 'lambda_2': 1e-06}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.60
+  Test R^2: 0.47
+  Training MAE: 2.76
+  Test MAE: 2.67
+  Training RMSE: 4.33
+  Test RMSE: 4.15
+Model saved to models/all-targets_minimal-features_LnEquilibrium_Pressure_25C_bayesian.onnx
+Feature importances for bayesian:
+    ave:gs_est_bcc_latcnt       : 0.442 ± 0.069
+    average_hydrogenation_energy: 0.134 ± 0.044
+    var:gs_mag_moment           : 0.085 ± 0.023
+    var:gs_energy               : 0.074 ± 0.014
+    ave:sound_velocity          : 0.023 ± 0.023
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 0.1, 'hidden_layer_sizes': (100, 50), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:02:12
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.91
+  Test R^2: 0.78
+  Training MAE: 1.34
+  Test MAE: 1.48
+  Training RMSE: 2.06
+  Test RMSE: 2.65
+Model saved to models/all-targets_minimal-features_LnEquilibrium_Pressure_25C_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    ave:sound_velocity          : 1.003 ± 0.121
+    ave:gs_est_bcc_latcnt       : 0.638 ± 0.058
+    var:gs_energy               : 0.362 ± 0.103
+    average_hydrogenation_energy: 0.311 ± 0.068
+    var:gs_mag_moment           : 0.190 ± 0.040
+----------------------------------------
+All models trained and evaluated successfully.

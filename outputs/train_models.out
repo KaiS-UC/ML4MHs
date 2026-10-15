@@ -1,0 +1,606 @@
+----------------------------------------
+Training models for target: Heat_of_Formation_kJperMolH2 using dataset: Heat_of_Formation_kJperMolH2_reduced-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 7, 'learning_rate': 0.1, 'n_estimators': 10}
+Training time for adaboost: 00:10:01
+Evaluation scores for adaboost:
+  Training R^2: 0.95
+  Test R^2: 0.59
+  Training MAE: 3.09
+  Test MAE: 5.60
+  Training RMSE: 4.53
+  Test RMSE: 10.11
+Model saved to models/Heat_of_Formation_kJperMolH2_reduced-features_Heat_of_Formation_kJperMolH2_adaboost.onnx
+Feature importances for adaboost:
+    ave:covalent_radius_pyykko  : 0.142 ± 0.025
+    ave:sound_velocity          : 0.125 ± 0.021
+    average_hydrogenation_energy: 0.078 ± 0.009
+    ave:gs_est_bcc_latcnt       : 0.055 ± 0.019
+    ave:en_allen                : 0.022 ± 0.006
+    var:fusion_enthalpy         : 0.022 ± 0.034
+    max:boiling_point           : 0.016 ± 0.011
+    var:gs_energy               : 0.009 ± 0.007
+    var:first_ion_en            : 0.007 ± 0.009
+    ave:vdw_radius_mm3          : 0.005 ± 0.004
+    var:gs_mag_moment           : 0.005 ± 0.037
+    ave:molar_volume            : -0.005 ± 0.006
+    max:lattice_constant        : -0.014 ± 0.031
+    var:covalent_radius_pyykko_triple: -0.021 ± 0.030
+    ave:atomic_radius           : -0.048 ± 0.013
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.01, 'max_depth': 4, 'n_estimators': 1000}
+Training time for gradientboost: 00:14:53
+Evaluation scores for gradientboost:
+  Training R^2: 0.98
+  Test R^2: 0.61
+  Training MAE: 2.23
+  Test MAE: 5.91
+  Training RMSE: 3.00
+  Test RMSE: 9.93
+Model saved to models/Heat_of_Formation_kJperMolH2_reduced-features_Heat_of_Formation_kJperMolH2_gradientboost.onnx
+Feature importances for gradientboost:
+    ave:en_allen                : 0.210 ± 0.035
+    ave:atomic_radius           : 0.186 ± 0.041
+    average_hydrogenation_energy: 0.121 ± 0.039
+    var:fusion_enthalpy         : 0.087 ± 0.014
+    ave:covalent_radius_pyykko  : 0.079 ± 0.014
+    ave:sound_velocity          : 0.052 ± 0.022
+    var:gs_mag_moment           : 0.038 ± 0.016
+    ave:molar_volume            : 0.037 ± 0.008
+    var:gs_energy               : 0.033 ± 0.021
+    var:first_ion_en            : 0.021 ± 0.008
+    ave:vdw_radius_mm3          : 0.016 ± 0.004
+    var:covalent_radius_pyykko_triple: 0.011 ± 0.009
+    ave:gs_est_bcc_latcnt       : 0.010 ± 0.010
+    max:boiling_point           : 0.008 ± 0.008
+    max:lattice_constant        : 0.007 ± 0.004
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 1e-06, 'alpha_2': 0.001, 'lambda_1': 0.001, 'lambda_2': 1e-06}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.67
+  Test R^2: 0.35
+  Training MAE: 7.00
+  Test MAE: 7.93
+  Training RMSE: 11.38
+  Test RMSE: 12.80
+Model saved to models/Heat_of_Formation_kJperMolH2_reduced-features_Heat_of_Formation_kJperMolH2_bayesian.onnx
+Feature importances for bayesian:
+    ave:molar_volume            : 0.326 ± 0.029
+    average_hydrogenation_energy: 0.309 ± 0.058
+    var:gs_mag_moment           : 0.145 ± 0.034
+    var:fusion_enthalpy         : 0.141 ± 0.011
+    var:covalent_radius_pyykko_triple: 0.090 ± 0.047
+    ave:gs_est_bcc_latcnt       : 0.057 ± 0.044
+    max:lattice_constant        : 0.049 ± 0.018
+    max:boiling_point           : 0.043 ± 0.026
+    var:gs_energy               : 0.027 ± 0.012
+    ave:en_allen                : -0.017 ± 0.016
+    ave:atomic_radius           : -0.018 ± 0.004
+    ave:sound_velocity          : -0.021 ± 0.006
+    var:first_ion_en            : -0.024 ± 0.016
+    ave:covalent_radius_pyykko  : -0.030 ± 0.015
+    ave:vdw_radius_mm3          : -0.070 ± 0.027
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 10.0, 'hidden_layer_sizes': (50,), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:03:18
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.79
+  Test R^2: 0.47
+  Training MAE: 5.61
+  Test MAE: 7.11
+  Training RMSE: 8.98
+  Test RMSE: 11.53
+Model saved to models/Heat_of_Formation_kJperMolH2_reduced-features_Heat_of_Formation_kJperMolH2_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    average_hydrogenation_energy: 0.422 ± 0.082
+    var:fusion_enthalpy         : 0.218 ± 0.023
+    ave:sound_velocity          : 0.096 ± 0.028
+    var:gs_energy               : 0.081 ± 0.018
+    var:covalent_radius_pyykko_triple: 0.073 ± 0.023
+    max:boiling_point           : 0.071 ± 0.033
+    ave:en_allen                : 0.046 ± 0.011
+    var:first_ion_en            : 0.039 ± 0.019
+    ave:molar_volume            : 0.032 ± 0.007
+    max:lattice_constant        : 0.025 ± 0.024
+    ave:covalent_radius_pyykko  : 0.015 ± 0.014
+    ave:vdw_radius_mm3          : 0.015 ± 0.036
+    var:gs_mag_moment           : 0.013 ± 0.022
+    ave:gs_est_bcc_latcnt       : -0.032 ± 0.026
+    ave:atomic_radius           : -0.037 ± 0.016
+----------------------------------------
+All models trained and evaluated successfully.
+----------------------------------------
+Training models for target: LnEquilibrium_Pressure_25C using dataset: LnEquilibrium_Pressure_25C_reduced-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 8, 'learning_rate': 1.0, 'n_estimators': 50}
+Training time for adaboost: 00:07:24
+Evaluation scores for adaboost:
+  Training R^2: 0.99
+  Test R^2: 0.89
+  Training MAE: 0.63
+  Test MAE: 1.21
+  Training RMSE: 0.83
+  Test RMSE: 1.90
+Model saved to models/LnEquilibrium_Pressure_25C_reduced-features_LnEquilibrium_Pressure_25C_adaboost.onnx
+Feature importances for adaboost:
+    average_hydrogenation_energy: 0.340 ± 0.056
+    ave:sound_velocity          : 0.195 ± 0.044
+    ave:gs_est_bcc_latcnt       : 0.144 ± 0.023
+    var:gs_energy               : 0.142 ± 0.013
+    var:gs_mag_moment           : 0.116 ± 0.011
+    var:en_allen                : 0.115 ± 0.043
+    ave:atomic_radius           : 0.065 ± 0.012
+    ave:vdw_radius_mm3          : 0.055 ± 0.005
+    max:en_allen                : 0.001 ± 0.001
+    var:num_p_valence           : 0.000 ± 0.000
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.1, 'max_depth': 4, 'n_estimators': 500}
+Training time for gradientboost: 00:10:05
+Evaluation scores for gradientboost:
+  Training R^2: 1.00
+  Test R^2: 0.76
+  Training MAE: 0.13
+  Test MAE: 1.27
+  Training RMSE: 0.28
+  Test RMSE: 2.81
+Model saved to models/LnEquilibrium_Pressure_25C_reduced-features_LnEquilibrium_Pressure_25C_gradientboost.onnx
+Feature importances for gradientboost:
+    ave:gs_est_bcc_latcnt       : 0.249 ± 0.034
+    average_hydrogenation_energy: 0.131 ± 0.039
+    ave:sound_velocity          : 0.129 ± 0.022
+    var:gs_mag_moment           : 0.113 ± 0.047
+    var:gs_energy               : 0.104 ± 0.021
+    ave:vdw_radius_mm3          : 0.083 ± 0.013
+    var:en_allen                : 0.054 ± 0.025
+    max:en_allen                : 0.032 ± 0.014
+    var:num_p_valence           : 0.005 ± 0.001
+    ave:atomic_radius           : -0.016 ± 0.015
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 1e-06, 'alpha_2': 0.001, 'lambda_1': 0.001, 'lambda_2': 1e-06}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.65
+  Test R^2: 0.41
+  Training MAE: 2.52
+  Test MAE: 2.60
+  Training RMSE: 4.06
+  Test RMSE: 4.39
+Model saved to models/LnEquilibrium_Pressure_25C_reduced-features_LnEquilibrium_Pressure_25C_bayesian.onnx
+Feature importances for bayesian:
+    average_hydrogenation_energy: 0.176 ± 0.047
+    ave:vdw_radius_mm3          : 0.143 ± 0.049
+    var:gs_mag_moment           : 0.098 ± 0.024
+    var:gs_energy               : 0.050 ± 0.010
+    var:num_p_valence           : 0.026 ± 0.002
+    max:en_allen                : 0.009 ± 0.020
+    var:en_allen                : 0.003 ± 0.018
+    ave:atomic_radius           : -0.003 ± 0.001
+    ave:sound_velocity          : -0.024 ± 0.008
+    ave:gs_est_bcc_latcnt       : -0.026 ± 0.029
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 0.01, 'hidden_layer_sizes': (100, 50), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:01:41
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.94
+  Test R^2: 0.69
+  Training MAE: 1.17
+  Test MAE: 1.66
+  Training RMSE: 1.70
+  Test RMSE: 3.19
+Model saved to models/LnEquilibrium_Pressure_25C_reduced-features_LnEquilibrium_Pressure_25C_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    ave:sound_velocity          : 0.787 ± 0.207
+    var:num_p_valence           : 0.578 ± 0.015
+    average_hydrogenation_energy: 0.538 ± 0.140
+    max:en_allen                : 0.277 ± 0.041
+    var:en_allen                : 0.241 ± 0.063
+    ave:gs_est_bcc_latcnt       : 0.183 ± 0.056
+    var:gs_mag_moment           : 0.116 ± 0.041
+    ave:vdw_radius_mm3          : 0.116 ± 0.053
+    ave:atomic_radius           : 0.103 ± 0.033
+    var:gs_energy               : 0.067 ± 0.024
+----------------------------------------
+All models trained and evaluated successfully.
+----------------------------------------
+Training models for target: Heat_of_Formation_kJperMolH2 using dataset: all-targets_reduced-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 7, 'learning_rate': 0.1, 'n_estimators': 10}
+Training time for adaboost: 00:10:01
+Evaluation scores for adaboost:
+  Training R^2: 0.95
+  Test R^2: 0.59
+  Training MAE: 3.09
+  Test MAE: 5.60
+  Training RMSE: 4.53
+  Test RMSE: 10.11
+Model saved to models/all-targets_reduced-features_Heat_of_Formation_kJperMolH2_adaboost.onnx
+Feature importances for adaboost:
+    ave:covalent_radius_pyykko  : 0.142 ± 0.025
+    ave:sound_velocity          : 0.125 ± 0.021
+    average_hydrogenation_energy: 0.078 ± 0.009
+    ave:gs_est_bcc_latcnt       : 0.055 ± 0.019
+    ave:en_allen                : 0.022 ± 0.006
+    var:fusion_enthalpy         : 0.022 ± 0.034
+    max:boiling_point           : 0.016 ± 0.011
+    var:gs_energy               : 0.009 ± 0.007
+    var:first_ion_en            : 0.007 ± 0.009
+    ave:vdw_radius_mm3          : 0.005 ± 0.004
+    var:gs_mag_moment           : 0.005 ± 0.037
+    ave:molar_volume            : -0.005 ± 0.006
+    max:lattice_constant        : -0.014 ± 0.031
+    var:covalent_radius_pyykko_triple: -0.021 ± 0.030
+    ave:atomic_radius           : -0.048 ± 0.013
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.01, 'max_depth': 4, 'n_estimators': 1000}
+Training time for gradientboost: 00:14:52
+Evaluation scores for gradientboost:
+  Training R^2: 0.98
+  Test R^2: 0.61
+  Training MAE: 2.23
+  Test MAE: 5.91
+  Training RMSE: 3.00
+  Test RMSE: 9.93
+Model saved to models/all-targets_reduced-features_Heat_of_Formation_kJperMolH2_gradientboost.onnx
+Feature importances for gradientboost:
+    ave:en_allen                : 0.210 ± 0.035
+    ave:atomic_radius           : 0.186 ± 0.041
+    average_hydrogenation_energy: 0.121 ± 0.039
+    var:fusion_enthalpy         : 0.087 ± 0.014
+    ave:covalent_radius_pyykko  : 0.079 ± 0.014
+    ave:sound_velocity          : 0.052 ± 0.022
+    var:gs_mag_moment           : 0.038 ± 0.016
+    ave:molar_volume            : 0.037 ± 0.008
+    var:gs_energy               : 0.033 ± 0.021
+    var:first_ion_en            : 0.021 ± 0.008
+    ave:vdw_radius_mm3          : 0.016 ± 0.004
+    var:covalent_radius_pyykko_triple: 0.011 ± 0.009
+    ave:gs_est_bcc_latcnt       : 0.010 ± 0.010
+    max:boiling_point           : 0.008 ± 0.008
+    max:lattice_constant        : 0.007 ± 0.004
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 1e-06, 'alpha_2': 0.001, 'lambda_1': 0.001, 'lambda_2': 1e-06}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.67
+  Test R^2: 0.35
+  Training MAE: 7.00
+  Test MAE: 7.93
+  Training RMSE: 11.38
+  Test RMSE: 12.80
+Model saved to models/all-targets_reduced-features_Heat_of_Formation_kJperMolH2_bayesian.onnx
+Feature importances for bayesian:
+    ave:molar_volume            : 0.326 ± 0.029
+    average_hydrogenation_energy: 0.309 ± 0.058
+    var:gs_mag_moment           : 0.145 ± 0.034
+    var:fusion_enthalpy         : 0.141 ± 0.011
+    var:covalent_radius_pyykko_triple: 0.090 ± 0.047
+    ave:gs_est_bcc_latcnt       : 0.057 ± 0.044
+    max:lattice_constant        : 0.049 ± 0.018
+    max:boiling_point           : 0.043 ± 0.026
+    var:gs_energy               : 0.027 ± 0.012
+    ave:en_allen                : -0.017 ± 0.016
+    ave:atomic_radius           : -0.018 ± 0.004
+    ave:sound_velocity          : -0.021 ± 0.006
+    var:first_ion_en            : -0.024 ± 0.016
+    ave:covalent_radius_pyykko  : -0.030 ± 0.015
+    ave:vdw_radius_mm3          : -0.070 ± 0.027
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 10.0, 'hidden_layer_sizes': (50,), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:03:21
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.79
+  Test R^2: 0.47
+  Training MAE: 5.61
+  Test MAE: 7.11
+  Training RMSE: 8.98
+  Test RMSE: 11.53
+Model saved to models/all-targets_reduced-features_Heat_of_Formation_kJperMolH2_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    average_hydrogenation_energy: 0.422 ± 0.082
+    var:fusion_enthalpy         : 0.218 ± 0.023
+    ave:sound_velocity          : 0.096 ± 0.028
+    var:gs_energy               : 0.081 ± 0.018
+    var:covalent_radius_pyykko_triple: 0.073 ± 0.023
+    max:boiling_point           : 0.071 ± 0.033
+    ave:en_allen                : 0.046 ± 0.011
+    var:first_ion_en            : 0.039 ± 0.019
+    ave:molar_volume            : 0.032 ± 0.007
+    max:lattice_constant        : 0.025 ± 0.024
+    ave:covalent_radius_pyykko  : 0.015 ± 0.014
+    ave:vdw_radius_mm3          : 0.015 ± 0.036
+    var:gs_mag_moment           : 0.013 ± 0.022
+    ave:gs_est_bcc_latcnt       : -0.032 ± 0.026
+    ave:atomic_radius           : -0.037 ± 0.016
+----------------------------------------
+All models trained and evaluated successfully.
+----------------------------------------
+Training models for target: LnEquilibrium_Pressure_25C using dataset: all-targets_reduced-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 8, 'learning_rate': 0.2, 'n_estimators': 10}
+Training time for adaboost: 00:09:23
+Evaluation scores for adaboost:
+  Training R^2: 0.98
+  Test R^2: 0.69
+  Training MAE: 0.62
+  Test MAE: 1.38
+  Training RMSE: 0.95
+  Test RMSE: 3.18
+Model saved to models/all-targets_reduced-features_LnEquilibrium_Pressure_25C_adaboost.onnx
+Feature importances for adaboost:
+    ave:gs_est_bcc_latcnt       : 0.233 ± 0.029
+    ave:covalent_radius_pyykko  : 0.211 ± 0.004
+    ave:vdw_radius_mm3          : 0.125 ± 0.011
+    var:gs_mag_moment           : 0.120 ± 0.017
+    average_hydrogenation_energy: 0.101 ± 0.035
+    ave:en_allen                : 0.050 ± 0.008
+    ave:molar_volume            : 0.039 ± 0.006
+    ave:sound_velocity          : 0.031 ± 0.004
+    max:boiling_point           : 0.016 ± 0.009
+    var:first_ion_en            : 0.006 ± 0.004
+    var:covalent_radius_pyykko_triple: 0.003 ± 0.007
+    var:fusion_enthalpy         : 0.002 ± 0.026
+    ave:atomic_radius           : -0.009 ± 0.006
+    var:gs_energy               : -0.021 ± 0.001
+    max:lattice_constant        : -0.022 ± 0.018
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.05, 'max_depth': 3, 'n_estimators': 10000}
+Training time for gradientboost: 00:15:49
+Evaluation scores for gradientboost:
+  Training R^2: 1.00
+  Test R^2: 0.76
+  Training MAE: 0.06
+  Test MAE: 1.30
+  Training RMSE: 0.27
+  Test RMSE: 2.80
+Model saved to models/all-targets_reduced-features_LnEquilibrium_Pressure_25C_gradientboost.onnx
+Feature importances for gradientboost:
+    var:fusion_enthalpy         : 0.125 ± 0.037
+    average_hydrogenation_energy: 0.089 ± 0.026
+    ave:en_allen                : 0.086 ± 0.008
+    ave:atomic_radius           : 0.075 ± 0.019
+    ave:covalent_radius_pyykko  : 0.072 ± 0.017
+    var:gs_mag_moment           : 0.046 ± 0.008
+    ave:sound_velocity          : 0.044 ± 0.015
+    ave:gs_est_bcc_latcnt       : 0.035 ± 0.009
+    var:gs_energy               : 0.033 ± 0.034
+    ave:molar_volume            : 0.033 ± 0.004
+    var:covalent_radius_pyykko_triple: 0.017 ± 0.010
+    ave:vdw_radius_mm3          : 0.016 ± 0.004
+    max:lattice_constant        : 0.010 ± 0.007
+    max:boiling_point           : 0.007 ± 0.004
+    var:first_ion_en            : 0.001 ± 0.008
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 0.001, 'alpha_2': 1e-06, 'lambda_1': 1e-06, 'lambda_2': 0.001}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.67
+  Test R^2: 0.52
+  Training MAE: 2.44
+  Test MAE: 2.34
+  Training RMSE: 3.93
+  Test RMSE: 3.95
+Model saved to models/all-targets_reduced-features_LnEquilibrium_Pressure_25C_bayesian.onnx
+Feature importances for bayesian:
+    ave:molar_volume            : 1.357 ± 0.064
+    ave:gs_est_bcc_latcnt       : 0.327 ± 0.049
+    average_hydrogenation_energy: 0.269 ± 0.047
+    ave:vdw_radius_mm3          : 0.176 ± 0.030
+    var:gs_mag_moment           : 0.115 ± 0.026
+    var:covalent_radius_pyykko_triple: 0.111 ± 0.046
+    var:fusion_enthalpy         : 0.073 ± 0.006
+    var:gs_energy               : 0.056 ± 0.008
+    max:boiling_point           : 0.030 ± 0.016
+    max:lattice_constant        : 0.015 ± 0.007
+    ave:en_allen                : 0.006 ± 0.002
+    ave:atomic_radius           : 0.002 ± 0.021
+    ave:sound_velocity          : -0.008 ± 0.002
+    var:first_ion_en            : -0.020 ± 0.011
+    ave:covalent_radius_pyykko  : -0.024 ± 0.011
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 1.0, 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:01:37
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.92
+  Test R^2: 0.62
+  Training MAE: 1.19
+  Test MAE: 1.78
+  Training RMSE: 2.01
+  Test RMSE: 3.54
+Model saved to models/all-targets_reduced-features_LnEquilibrium_Pressure_25C_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    average_hydrogenation_energy: 0.454 ± 0.141
+    var:fusion_enthalpy         : 0.311 ± 0.034
+    ave:en_allen                : 0.288 ± 0.053
+    ave:sound_velocity          : 0.185 ± 0.077
+    var:gs_mag_moment           : 0.157 ± 0.050
+    var:covalent_radius_pyykko_triple: 0.146 ± 0.012
+    var:gs_energy               : 0.100 ± 0.028
+    max:boiling_point           : 0.076 ± 0.036
+    ave:molar_volume            : 0.061 ± 0.008
+    ave:vdw_radius_mm3          : 0.035 ± 0.066
+    max:lattice_constant        : 0.024 ± 0.019
+    var:first_ion_en            : 0.021 ± 0.031
+    ave:covalent_radius_pyykko  : -0.010 ± 0.027
+    ave:gs_est_bcc_latcnt       : -0.014 ± 0.014
+    ave:atomic_radius           : -0.030 ± 0.031
+----------------------------------------
+All models trained and evaluated successfully.
+----------------------------------------
+Training models for target: Heat_of_Formation_kJperMolH2 using dataset: all-targets_common-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 9, 'learning_rate': 1.0, 'n_estimators': 100}
+Training time for adaboost: 00:06:59
+Evaluation scores for adaboost:
+  Training R^2: 0.98
+  Test R^2: 0.72
+  Training MAE: 1.92
+  Test MAE: 5.30
+  Training RMSE: 2.61
+  Test RMSE: 8.44
+Model saved to models/all-targets_common-features_Heat_of_Formation_kJperMolH2_adaboost.onnx
+Feature importances for adaboost:
+    ave:sound_velocity          : 0.238 ± 0.035
+    average_hydrogenation_energy: 0.225 ± 0.029
+    var:gs_energy               : 0.158 ± 0.055
+    ave:vdw_radius_mm3          : 0.079 ± 0.018
+    ave:gs_est_bcc_latcnt       : 0.075 ± 0.018
+    var:gs_mag_moment           : 0.071 ± 0.028
+    ave:atomic_radius           : 0.056 ± 0.031
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.2, 'max_depth': 7, 'n_estimators': 10}
+Training time for gradientboost: 00:08:20
+Evaluation scores for gradientboost:
+  Training R^2: 0.96
+  Test R^2: 0.55
+  Training MAE: 2.83
+  Test MAE: 5.99
+  Training RMSE: 3.90
+  Test RMSE: 10.70
+Model saved to models/all-targets_common-features_Heat_of_Formation_kJperMolH2_gradientboost.onnx
+Feature importances for gradientboost:
+    var:gs_mag_moment           : 0.450 ± 0.168
+    ave:sound_velocity          : 0.372 ± 0.040
+    average_hydrogenation_energy: 0.265 ± 0.046
+    ave:gs_est_bcc_latcnt       : 0.140 ± 0.037
+    ave:atomic_radius           : 0.132 ± 0.055
+    ave:vdw_radius_mm3          : 0.111 ± 0.009
+    var:gs_energy               : 0.084 ± 0.062
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 0.001, 'alpha_2': 1e-06, 'lambda_1': 1e-06, 'lambda_2': 0.001}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.59
+  Test R^2: 0.16
+  Training MAE: 8.04
+  Test MAE: 9.31
+  Training RMSE: 12.64
+  Test RMSE: 14.57
+Model saved to models/all-targets_common-features_Heat_of_Formation_kJperMolH2_bayesian.onnx
+Feature importances for bayesian:
+    ave:gs_est_bcc_latcnt       : 0.676 ± 0.130
+    ave:atomic_radius           : 0.568 ± 0.073
+    average_hydrogenation_energy: 0.170 ± 0.064
+    var:gs_mag_moment           : 0.144 ± 0.039
+    var:gs_energy               : 0.049 ± 0.019
+    ave:sound_velocity          : -0.040 ± 0.012
+    ave:vdw_radius_mm3          : -0.096 ± 0.032
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 0.01, 'hidden_layer_sizes': (50,), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:03:40
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.71
+  Test R^2: 0.13
+  Training MAE: 6.56
+  Test MAE: 8.65
+  Training RMSE: 10.57
+  Test RMSE: 14.82
+Model saved to models/all-targets_common-features_Heat_of_Formation_kJperMolH2_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    ave:sound_velocity          : 0.213 ± 0.097
+    average_hydrogenation_energy: 0.138 ± 0.113
+    ave:gs_est_bcc_latcnt       : 0.132 ± 0.054
+    var:gs_mag_moment           : 0.097 ± 0.029
+    var:gs_energy               : 0.084 ± 0.034
+    ave:vdw_radius_mm3          : 0.026 ± 0.039
+    ave:atomic_radius           : 0.018 ± 0.020
+----------------------------------------
+All models trained and evaluated successfully.
+----------------------------------------
+Training models for target: LnEquilibrium_Pressure_25C using dataset: all-targets_common-features
+Training model: adaboost
+Best parameters found:  {'estimator__max_depth': 8, 'learning_rate': 1.0, 'n_estimators': 500}
+Training time for adaboost: 00:06:40
+Evaluation scores for adaboost:
+  Training R^2: 0.98
+  Test R^2: 0.76
+  Training MAE: 0.75
+  Test MAE: 1.46
+  Training RMSE: 0.94
+  Test RMSE: 2.77
+Model saved to models/all-targets_common-features_LnEquilibrium_Pressure_25C_adaboost.onnx
+Feature importances for adaboost:
+    average_hydrogenation_energy: 0.240 ± 0.058
+    ave:sound_velocity          : 0.127 ± 0.012
+    ave:atomic_radius           : 0.089 ± 0.013
+    var:gs_mag_moment           : 0.089 ± 0.009
+    var:gs_energy               : 0.081 ± 0.078
+    ave:gs_est_bcc_latcnt       : 0.074 ± 0.010
+    ave:vdw_radius_mm3          : -0.012 ± 0.036
+----------------------------------------
+Training model: gradientboost
+Best parameters found:  {'learning_rate': 0.1, 'max_depth': 3, 'n_estimators': 500}
+Training time for gradientboost: 00:08:38
+Evaluation scores for gradientboost:
+  Training R^2: 1.00
+  Test R^2: 0.68
+  Training MAE: 0.31
+  Test MAE: 1.49
+  Training RMSE: 0.44
+  Test RMSE: 3.24
+Model saved to models/all-targets_common-features_LnEquilibrium_Pressure_25C_gradientboost.onnx
+Feature importances for gradientboost:
+    ave:sound_velocity          : 0.197 ± 0.044
+    ave:gs_est_bcc_latcnt       : 0.162 ± 0.032
+    average_hydrogenation_energy: 0.143 ± 0.045
+    var:gs_mag_moment           : 0.096 ± 0.023
+    var:gs_energy               : 0.091 ± 0.036
+    ave:vdw_radius_mm3          : 0.071 ± 0.018
+    ave:atomic_radius           : -0.080 ± 0.014
+----------------------------------------
+Training model: bayesian
+Best parameters found:  {'alpha_1': 1e-06, 'alpha_2': 0.001, 'lambda_1': 0.001, 'lambda_2': 1e-06}
+Training time for bayesian: 00:00:00
+Evaluation scores for bayesian:
+  Training R^2: 0.62
+  Test R^2: 0.45
+  Training MAE: 2.72
+  Test MAE: 2.73
+  Training RMSE: 4.26
+  Test RMSE: 4.22
+Model saved to models/all-targets_common-features_LnEquilibrium_Pressure_25C_bayesian.onnx
+Feature importances for bayesian:
+    average_hydrogenation_energy: 0.140 ± 0.046
+    ave:gs_est_bcc_latcnt       : 0.111 ± 0.040
+    var:gs_mag_moment           : 0.102 ± 0.024
+    ave:atomic_radius           : 0.092 ± 0.013
+    var:gs_energy               : 0.083 ± 0.014
+    ave:vdw_radius_mm3          : 0.070 ± 0.033
+    ave:sound_velocity          : -0.018 ± 0.012
+----------------------------------------
+Training model: neuralnetwork
+Best parameters found:  {'activation': 'relu', 'alpha': 0.0001, 'hidden_layer_sizes': (100,), 'learning_rate_init': 0.01}
+Training time for neuralnetwork: 00:02:01
+Evaluation scores for neuralnetwork:
+  Training R^2: 0.87
+  Test R^2: 0.71
+  Training MAE: 1.48
+  Test MAE: 1.70
+  Training RMSE: 2.52
+  Test RMSE: 3.06
+Model saved to models/all-targets_common-features_LnEquilibrium_Pressure_25C_neuralnetwork.onnx
+Feature importances for neuralnetwork:
+    ave:sound_velocity          : 0.978 ± 0.139
+    ave:gs_est_bcc_latcnt       : 0.812 ± 0.059
+    average_hydrogenation_energy: 0.392 ± 0.061
+    ave:vdw_radius_mm3          : 0.253 ± 0.072
+    var:gs_energy               : 0.235 ± 0.038
+    ave:atomic_radius           : 0.174 ± 0.032
+    var:gs_mag_moment           : 0.153 ± 0.031
+----------------------------------------
+All models trained and evaluated successfully.

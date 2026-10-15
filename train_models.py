@@ -176,10 +176,11 @@ if __name__ == "__main__":
         'LnEquilibrium_Pressure_25C'
     ]
 
-    training_datasets = [f"{target}_reduced-features" for target in targets] + [
-            'all-targets_reduced-features',
-            'all-targets_common-features'
-            ]
+    # training_datasets = [f"{target}_reduced-features" for target in targets] + [
+    #         'all-targets_reduced-features',
+    #         'all-targets_common-features'
+    #         ]
+    training_datasets = ['all-targets_minimal-features']     # added after selecting manually based on feature importance and correlation
 
     for dataset in training_datasets:
         # Determine the target based on the dataset name
@@ -195,7 +196,7 @@ if __name__ == "__main__":
         data = load_data(data_file)
 
         # Separate features
-        X = data.drop(target, axis=1)
+        X = data.drop(targets, axis=1)
 
         for t in target:
             # Separate outputs for clarity
@@ -275,11 +276,11 @@ if __name__ == "__main__":
             model_predictions_train = pd.DataFrame(model_predictions_train)
             model_predictions_test = pd.DataFrame(model_predictions_test)
 
-            model_evaluations_train.to_excel(f'training_data/scores_train_{dataset}_{t}.xlsx')
-            model_evaluations_test.to_excel(f'training_data/scores_test_{dataset}_{t}.xlsx')
-            model_feature_importances.to_excel(f'training_data/importances_{dataset}_{t}.xlsx')
-            model_feature_importances_std.to_excel(f'training_data/importances_std_{dataset}_{t}.xlsx')
-            model_predictions_train.to_excel(f'training_data/predictions_train_{dataset}_{t}.xlsx')
-            model_predictions_test.to_excel(f'training_data/predictions_test_{dataset}_{t}.xlsx')
+            model_evaluations_train.to_excel(f'models/scores_train_{dataset}_{t}.xlsx')
+            model_evaluations_test.to_excel(f'models/scores_test_{dataset}_{t}.xlsx')
+            model_feature_importances.to_excel(f'models/importances_{dataset}_{t}.xlsx')
+            model_feature_importances_std.to_excel(f'models/importances_std_{dataset}_{t}.xlsx')
+            model_predictions_train.to_excel(f'models/predictions_train_{dataset}_{t}.xlsx')
+            model_predictions_test.to_excel(f'models/predictions_test_{dataset}_{t}.xlsx')
 
             print("All models trained and evaluated successfully.")

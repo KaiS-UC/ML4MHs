@@ -21,6 +21,17 @@ FEATURE_NAMES = {
     'var:gs_energy': 'Variance of Ground State Energy',
     'var:num_p_valence': 'Variance of No. of p Valence Electrons',
     'average_hydrogenation_energy': 'Average Hydrogenation Energy (kJ/mol H2)',
+    'var:covalent_radius_pyykko_triple': 'Variance of Covalent Radius (Pyykko) - Triple Bond',
+    'ave:sound_velocity': 'Average Sound Velocity',
+    'var:gs_mag_moment': 'Variance of Ground State Magnetic Moment',
+    'ave:en_allen': 'Average Electronegativity (Allen)',
+    'var:en_allen': 'Variance of Electronegativity (Allen)',
+    'max:en_allen': 'Maximum Electronegativity (Allen)',
+    'var:fusion_enthalpy': 'Variance of Fusion Enthalpy',
+    'max:boiling_point': 'Maximum Boiling Point',
+    'var:first_ion_en': 'Variance of First Ionization Energy',
+    'ave:molar_volume': 'Average Molar Volume',
+    'max:lattice_constant': 'Maximum Lattice Constant',
 }
 
 EVALUATION_NAMES = {
@@ -57,8 +68,7 @@ def plot_feature_correlations(data, ax=None, **kwargs):
     ax.xaxis.set_ticks_position('bottom')
     ax.set_xticks(np.arange(len(data.columns)))
     ax.set_yticks(np.arange(len(data.columns)))
-    #labels = [FEATURE_NAMES[col] for col in data.columns]
-    labels = [col for col in data.columns]
+    labels = [FEATURE_NAMES[col] if col in FEATURE_NAMES else col for col in data.columns]
     ax.set_xticklabels(labels, rotation=90, fontsize=13)
     ax.set_yticklabels(labels, fontsize=13)
 
@@ -135,7 +145,7 @@ def plot_feature_importance(feature_names, feature_importances, feature_importan
         if feature_importances_std is not None:
             feature_importances_std = feature_importances_std[indices]
 
-    features = [FEATURE_NAMES[name] for name in feature_names]
+    features = [FEATURE_NAMES[name] if name in FEATURE_NAMES else name for name in feature_names]
     ax.barh(features, feature_importances, xerr=feature_importances_std, capsize=5, **kwargs)
     ax.tick_params(labelsize=13)
     ax.set_xlim(left=0)
@@ -156,7 +166,8 @@ if __name__ == "__main__":
         'Heat_of_Formation_kJperMolH2_reduced-features',
         'LnEquilibrium_Pressure_25C_reduced-features',
         'all-targets_reduced-features',
-        'all-targets_common-features'
+        'all-targets_common-features',
+        'all-targets_minimal-features'
         ]
 
     for dataset in training_datasets:
@@ -191,7 +202,7 @@ if __name__ == "__main__":
             model_feature_importances = pd.read_excel(f'models/importances_{dataset}_{t}.xlsx')
             model_feature_importances_std = pd.read_excel(f'models/importances_std_{dataset}_{t}.xlsx')
 
-            for model_name in model_predictions_train.columns[1:]:
+            for model_name in model_predictions_train.columns[2:]:
                 # Plot real vs predicted values
                 y_train = model_predictions_train['y_train']
                 y_train_pred = model_predictions_train[model_name]
