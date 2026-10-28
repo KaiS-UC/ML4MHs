@@ -7,7 +7,6 @@ from composition_parser import parse_composition
 
 # hydrogenation data retrieved from mp on 20. Feb. 2024
 HYDROGENATION_DATA = {
-    'n': {'energy': None, 'composition': None},
     'H': {'energy': None, 'composition': None},
     'He': {'energy': None, 'composition': None},
     'Li': {'energy': -188.86507354144595, 'composition': 'Li1H1'},
