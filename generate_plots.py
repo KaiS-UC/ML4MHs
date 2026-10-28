@@ -105,12 +105,13 @@ def plot_real_vs_predicted(y_real, y_pred, ax=None, **kwargs):
     y_pred (np.ndarray): Predicted target values.
     """
     if ax is None:
-        fig, ax = plt.subplots(figsize=(8, 6))
+        fig, ax = plt.subplots(figsize=(6, 6))
 
     ax.axline((0, 0), slope=1, color='red', linestyle='--')
     ax.scatter(y_real, y_pred, **kwargs)
     ax.set_xlabel('Actual Values', fontsize=15)
     ax.set_ylabel('Predicted Values', fontsize=15)
+    ax.set_box_aspect(1)
     ax.set_aspect('equal', 'datalim')
     ax.grid(True)
     ax.legend(fontsize=13)
@@ -147,9 +148,9 @@ def plot_feature_importance(feature_names, feature_importances, feature_importan
 
     features = [FEATURE_NAMES[name] if name in FEATURE_NAMES else name for name in feature_names]
     ax.barh(features, feature_importances, xerr=feature_importances_std, capsize=5, **kwargs)
-    ax.tick_params(labelsize=13)
+    ax.tick_params(labelsize=20)
     ax.set_xlim(left=0)
-    ax.set_xlabel('Feature Importance', fontsize=13)
+    ax.set_xlabel('Feature Importance', fontsize=20)
 
     return ax
 
