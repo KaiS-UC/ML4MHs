@@ -1,0 +1,758 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ML4MHs Alloy Design</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
+<style>
+/* ── Design tokens ─────────────────────────────────────────────── */
+:root {
+  --bg:       #F7F6F3;
+  --surface:  #FFFFFF;
+  --surface2: #F0EEE9;
+  --border:   #E2DFDA;
+  --border2:  #CBC8C2;
+  --fg:       #1A1917;
+  --fg2:      #5C5A55;
+  --fg3:      #9A9690;
+  --accent:   #3D5AFE;
+  --accent-s: #EEF1FF;
+  --green:    #1B8A5A;
+  --green-s:  #E3F5EC;
+  --amber:    #B45309;
+  --amber-s:  #FEF3C7;
+  --red:      #C0392B;
+  --red-s:    #FDEDED;
+  --mono:     'JetBrains Mono', monospace;
+  --sans:     'Inter', system-ui, sans-serif;
+  --r-sm:     6px;
+  --r-md:     10px;
+  --r-lg:     14px;
+  --r-pill:   999px;
+  --shadow:   0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#16150F; --surface:#201E17; --surface2:#2A2820; --border:#3A3830;
+    --border2:#504E46; --fg:#F0EDE6; --fg2:#A09C94; --fg3:#605D56;
+    --accent:#7B93FF; --accent-s:#1E2340; --green:#3EC98A; --green-s:#0D2E1F;
+    --amber:#FBBF24; --amber-s:#2D1F00; --red:#F87171; --red-s:#2D0D0D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#16150F; --surface:#201E17; --surface2:#2A2820; --border:#3A3830;
+  --border2:#504E46; --fg:#F0EDE6; --fg2:#A09C94; --fg3:#605D56;
+  --accent:#7B93FF; --accent-s:#1E2340; --green:#3EC98A; --green-s:#0D2E1F;
+  --amber:#FBBF24; --amber-s:#2D1F00; --red:#F87171; --red-s:#2D0D0D;
+  color-scheme: dark;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body {
+  font-family: var(--sans); font-size: 14px; line-height: 1.5;
+  background: var(--bg); color: var(--fg);
+  padding: 0 max(16px, env(safe-area-inset-left,0px));
+  padding-right: max(16px, env(safe-area-inset-right,0px));
+  padding-block: 20px;
+}
+
+/* ── Status banner ─────────────────────────────────────────────── */
+.status-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: var(--r-md);
+  background: var(--accent-s); border: 1px solid var(--accent);
+  margin-bottom: 18px; font-size: 13px;
+}
+.status-bar.ok  { background: var(--green-s); border-color: var(--green); }
+.status-bar.warn{ background: var(--amber-s); border-color: var(--amber); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-bar .status-dot { background: var(--accent); }
+.status-bar.ok .status-dot { background: var(--green); }
+.status-bar.warn .status-dot { background: var(--amber); }
+
+/* ── Section label ─────────────────────────────────────────────── */
+.label {
+  font-size: 11px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--fg3); margin-bottom: 8px;
+}
+
+/* ── Tab bar (5 feature tabs) ──────────────────────────────────── */
+.tab-bar {
+  display: flex; gap: 0; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 3px; margin-bottom: 12px; overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 1; min-width: 90px; padding: 7px 10px; border-radius: var(--r-md);
+  font-size: 12px; font-weight: 500; color: var(--fg2);
+  cursor: pointer; text-align: center; white-space: nowrap;
+  border: none; background: none; transition: all .18s; line-height: 1.4;
+}
+.tab-btn .tab-icon { display: block; font-size: 15px; margin-bottom: 2px; }
+.tab-btn:hover { color: var(--fg); }
+.tab-btn.active {
+  background: var(--surface); color: var(--fg);
+  box-shadow: var(--shadow); font-weight: 600;
+}
+
+/* ── Guidance box ──────────────────────────────────────────────── */
+.guidance {
+  display: flex; gap: 11px; align-items: flex-start;
+  padding: 11px 14px; border-radius: var(--r-md);
+  border: 1px solid var(--border); background: var(--surface);
+  margin-bottom: 14px; transition: background .2s, border-color .2s;
+}
+.guidance-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.guidance-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.guidance-body  { font-size: 12px; line-height: 1.65; color: var(--fg2); }
+.guidance-body strong { color: var(--fg); font-weight: 600; }
+
+/* ── Legend ────────────────────────────────────────────────────── */
+.legend-row {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 12px;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--fg2); }
+.legend-swatch { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Periodic table ────────────────────────────────────────────── */
+.pt-scroll { overflow-x: auto; margin-bottom: 16px; }
+.pt-grid {
+  display: grid; grid-template-columns: repeat(18, 1fr);
+  gap: 2.5px; min-width: 560px;
+}
+.el {
+  border-radius: 4px; padding: 2.5px 1px; cursor: pointer; text-align: center;
+  border: 1.5px solid transparent; transition: border-color .1s;
+  user-select: none; min-width: 28px;
+}
+.el:hover { border-color: var(--accent); }
+.el.selected { border: 2px solid var(--accent); box-shadow: 0 0 0 2px var(--accent-s); }
+.el.unavail { opacity: .22; cursor: default; pointer-events: none; }
+.el-num { font-size: 8.5px; display: block; color: var(--fg3); font-family: var(--mono); }
+.el-sym { font-size: 11.5px; font-weight: 700; display: block; color: var(--fg); }
+.gap { min-width: 28px; }
+.la-label {
+  font-size: 9px; color: var(--fg3); display: flex; align-items: center;
+  justify-content: center; min-width: 28px; opacity: .7;
+}
+
+/* ── Benchmarks ─────────────────────────────────────────────────── */
+.bm-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.bm-btn {
+  font-size: 12px; padding: 5px 12px; border-radius: var(--r-pill);
+  cursor: pointer; background: var(--surface); border: 1px solid var(--border);
+  color: var(--fg2); font-family: var(--mono); font-weight: 500;
+  transition: all .15s;
+}
+.bm-btn:hover { background: var(--surface2); color: var(--fg); }
+
+/* ── Composition chips ─────────────────────────────────────────── */
+.comp-list {
+  display: flex; flex-wrap: wrap; gap: 6px; min-height: 42px;
+  padding: 7px; background: var(--surface2); border-radius: var(--r-md);
+  border: 1px solid var(--border); margin-bottom: 6px;
+}
+.chip {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-pill); padding: 4px 5px 4px 11px; font-size: 13px;
+}
+.chip-sym { font-weight: 700; color: var(--fg); font-family: var(--mono); }
+.chip-frac { color: var(--fg2); font-variant-numeric: tabular-nums; }
+.chip-rm {
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: var(--red); color: #fff; font-size: 13px; font-weight: 700;
+  flex-shrink: 0; transition: background .12s, transform .1s;
+}
+.chip-rm:hover { background: #911; transform: scale(1.15); }
+
+/* ── Formula display ─────────────────────────────────────────────── */
+.formula-box {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 12px; margin-bottom: 14px;
+  min-height: 52px;
+}
+.formula-text { font-size: 26px; font-weight: 400; font-family: 'Georgia', serif; letter-spacing: .01em; }
+.formula-text sub { font-size: 16px; font-weight: 400; }
+.formula-empty { font-size: 13px; color: var(--fg3); }
+
+/* ── Sliders ─────────────────────────────────────────────────────── */
+.frac-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+.frac-item {
+  display: grid; grid-template-columns: 32px 1fr 66px;
+  align-items: center; gap: 10px;
+}
+.frac-label { font-size: 14px; font-weight: 700; font-family: var(--mono); color: var(--fg); }
+input[type=range] { width: 100%; display: block; accent-color: var(--accent); }
+.frac-num-wrap { display: flex; align-items: center; gap: 3px; }
+.frac-num {
+  width: 50px; font-size: 13px; text-align: right; padding: 4px 5px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm);
+  color: var(--fg); font-family: var(--mono);
+  -moz-appearance: textfield;
+}
+.frac-num::-webkit-outer-spin-button,
+.frac-num::-webkit-inner-spin-button { -webkit-appearance: none; }
+.frac-pct { font-size: 12px; color: var(--fg3); }
+.norm-note {
+  font-size: 12px; color: var(--fg3); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* ── Results card ─────────────────────────────────────────────────── */
+.results {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px; margin-bottom: 12px;
+  transition: opacity .15s;
+}
+.results.updating { opacity: .45; }
+.results-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.model-badge {
+  font-size: 10.5px; padding: 2px 8px; border-radius: var(--r-pill);
+  background: var(--green-s); color: var(--green); font-weight: 600;
+  border: 1px solid currentColor; opacity: .8;
+}
+.metric-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 8px; margin-bottom: 12px;
+}
+.metric {
+  background: var(--surface2); border-radius: var(--r-md);
+  padding: 12px; text-align: center;
+}
+.metric-label { font-size: 11px; color: var(--fg3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
+.metric-val { font-size: 24px; font-weight: 500; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.metric-unit { font-size: 10px; color: var(--fg3); margin-top: 2px; }
+.metric-sub {
+  font-size: 12px; color: var(--fg2); margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid var(--border); font-variant-numeric: tabular-nums;
+}
+.pressure-ctx {
+  font-size: 12px; font-weight: 500; padding: 6px 10px;
+  border-radius: var(--r-sm); text-align: center; margin-bottom: 12px;
+}
+
+/* ── Gauges ──────────────────────────────────────────────────────── */
+.gauge-wrap { margin-bottom: 7px; }
+.gauge-label {
+  display: flex; justify-content: space-between;
+  font-size: 11.5px; color: var(--fg3); margin-bottom: 3px;
+}
+.gauge-track {
+  height: 6px; border-radius: 3px; background: var(--surface2);
+  overflow: hidden;
+}
+.gauge-fill {
+  height: 100%; border-radius: 3px; transition: width .25s, background .25s;
+}
+.verdict {
+  text-align: center; font-size: 13.5px; font-weight: 500;
+  padding: 9px; border-radius: var(--r-md); margin-top: 10px;
+}
+
+/* ── Descriptor table ────────────────────────────────────────────── */
+.desc-row {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.desc-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12.5px; padding: 3px 0;
+}
+.desc-key { color: var(--fg2); }
+.desc-val { font-family: var(--mono); font-weight: 500; font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* ── Ask Claude btn ──────────────────────────────────────────────── */
+.ask-btn {
+  width: 100%; font-size: 13px; padding: 9px; border-radius: var(--r-md);
+  background: var(--accent-s); border: 1px solid var(--accent); color: var(--accent);
+  cursor: pointer; font-weight: 600; transition: all .15s;
+}
+.ask-btn:hover { background: var(--accent); color: #fff; }
+
+/* ── Clear btn ───────────────────────────────────────────────────── */
+.clear-btn {
+  font-size: 12px; padding: 5px 12px; border-radius: var(--r-pill);
+  background: none; border: 1px solid var(--border); color: var(--fg2);
+  cursor: pointer; margin-bottom: 16px;
+}
+.clear-btn:hover { background: var(--red-s); color: var(--red); border-color: var(--red); }
+
+.hint { font-size: 12px; color: var(--fg3); margin-bottom: 14px; }
+</style>
+
+<div class="status-bar ok" id="status-bar" style="display:none">
+  <span class="status-dot"></span>
+  <span id="status-text">Loading models…</span>
+</div>
+
+<div class="label">Color the periodic table by</div>
+<div class="tab-bar" id="tab-bar">
+  <button class="tab-btn active" data-mode="dh" onclick="setMode('dh')">
+    <span class="tab-icon">🔥</span>Hydrog. energy
+  </button>
+  <button class="tab-btn" data-mode="gs" onclick="setMode('gs')">
+    <span class="tab-icon">⚡</span>GS energy var.
+  </button>
+  <button class="tab-btn" data-mode="bcc" onclick="setMode('bcc')">
+    <span class="tab-icon">🔷</span>BCC lattice
+  </button>
+  <button class="tab-btn" data-mode="snd" onclick="setMode('snd')">
+    <span class="tab-icon">🔊</span>Sound velocity
+  </button>
+  <button class="tab-btn" data-mode="mag" onclick="setMode('mag')">
+    <span class="tab-icon">🧲</span>Mag. moment var.
+  </button>
+</div>
+
+<div class="guidance" id="guidance-box">
+  <div class="guidance-icon" id="g-icon">🔥</div>
+  <div>
+    <div class="guidance-title" id="g-title">Design by hydrogenation energy</div>
+    <div class="guidance-body" id="g-body"></div>
+  </div>
+</div>
+
+<div class="legend-row" id="legend"></div>
+<div class="pt-scroll"><div class="pt-grid" id="pt"></div></div>
+
+<div class="label">Load benchmark</div>
+<div class="bm-row">
+  <div class="bm-btn" onclick="loadBM('LaNi5')">LaNi₅</div>
+  <div class="bm-btn" onclick="loadBM('TiFe')">TiFe</div>
+  <div class="bm-btn" onclick="loadBM('TiCr2')">TiCr₂</div>
+  <div class="bm-btn" onclick="loadBM('MgNi')">MgNi</div>
+</div>
+
+<div class="label">Composition</div>
+<div class="comp-list" id="comp-list">
+  <span style="font-size:13px;color:var(--fg3);align-self:center">Click elements above to add them (up to 5)</span>
+</div>
+<div class="formula-box" id="formula-box"><span class="formula-empty">Formula will appear here</span></div>
+<div class="hint">Drag sliders or type percentages — both update in real time</div>
+<div class="frac-row" id="frac-row"></div>
+<div class="norm-note" id="norm-note" style="display:none">↔ Fractions auto-normalise to 100%</div>
+<button class="clear-btn" onclick="clearAll()">✕ Clear composition</button>
+
+<div id="results-panel" style="display:none">
+  <div class="results" id="results-box">
+    <div class="results-header">
+      <span class="label" style="margin-bottom:0">Prediction</span>
+      <span class="model-badge" id="model-badge">GradientBoost + NeuralNetwork</span>
+    </div>
+    <div class="metric-grid">
+      <div class="metric">
+        <div class="metric-label">ΔH (formation)</div>
+        <div class="metric-val" id="r-dh">—</div>
+        <div class="metric-unit">kJ / mol-H₂</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">ln(p_eq) at 25°C</div>
+        <div class="metric-val" id="r-peq">—</div>
+        <div class="metric-unit">ln(p / p₀)</div>
+        <div class="metric-sub" id="r-bar">— bar</div>
+      </div>
+    </div>
+    <div class="pressure-ctx" id="p-ctx"></div>
+    <div class="gauge-wrap">
+      <div class="gauge-label"><span>ΔH closeness to target 30–40 kJ/mol</span><span id="g1-pct"></span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="g1-fill"></div></div>
+    </div>
+    <div class="gauge-wrap">
+      <div class="gauge-label"><span>Equilibrium pressure nearness to 1 bar</span><span id="g2-pct"></span></div>
+      <div class="gauge-track"><div class="gauge-fill" id="g2-fill"></div></div>
+    </div>
+    <div class="verdict" id="verdict"></div>
+    <div class="desc-row">
+      <div class="label" style="margin-bottom:4px">Model input descriptors</div>
+      <div class="desc-item"><span class="desc-key">Ave. BCC lattice constant</span><span class="desc-val" id="d-bcc">—</span></div>
+      <div class="desc-item"><span class="desc-key">Ave. sound velocity</span><span class="desc-val" id="d-snd">—</span></div>
+      <div class="desc-item"><span class="desc-key">Var. ground-state energy</span><span class="desc-val" id="d-var">—</span></div>
+      <div class="desc-item"><span class="desc-key">Var. magnetic moment</span><span class="desc-val" id="d-mag">—</span></div>
+      <div class="desc-item"><span class="desc-key">Ave. hydrogenation energy</span><span class="desc-val" id="d-avgdh">—</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Element feature lookup ──────────────────────────────────────────────
+// [bcc_latcnt (Å), sound_velocity (m/s), gs_energy (eV), gs_mag (μB), avg_hydro (kJ/mol-H₂)]
+// Recovered from 771-entry training set via Ridge regression + nonlinear optimisation
+const ED = {"Ag":[3.38029,2200.54,-7.20531,0.64094,9.032],"Al":[3.24005,4991.99,-10.33021,0.40275,-29.611],"B":[2.61077,15952.71,-7.13967,0.59925,-70.2],"Be":[3.02233,11880.86,-10.1907,0.64397,-201.248],"Bi":[4.29091,1284.29,-10.1653,0.44562,113.867],"Ca":[3.80335,4434.26,-11.93129,1.53419,-128.916],"Ce":[3.93365,2658.32,-9.19394,0.74869,-120.028],"Co":[2.83071,4529.91,-6.89395,-0.79988,-39.163],"Cr":[2.88375,5952.1,-4.38392,0.34742,-7.125],"Cu":[2.90859,3342.14,-10.3676,0.66694,17.228],"Dy":[3.7026,3288.92,-9.37094,0.65362,-177.057],"Er":[3.70136,3350.93,-9.36158,0.64493,-181.584],"Eu":[3.78404,3610.93,-4.75774,0.53981,-125.847],"Fe":[2.86459,4697.11,-5.68825,2.7265,-44.729],"Ga":[3.3315,2717.63,-6.23607,0.41065,135.481],"Gd":[3.64965,3398.84,-9.34015,0.69962,-145.759],"Ge":[3.94676,4957.11,-7.70242,0.41535,-85.066],"Hf":[3.55809,2997.37,-4.07212,0.76236,-162.26],"Ho":[3.69975,3309.12,-9.35781,0.69492,-180.805],"In":[3.91904,788.41,-5.80112,0.29652,93.451],"Ir":[3.26179,4405.02,-5.29092,0.84139,124.676],"La":[3.74226,3304.72,-9.06752,0.65535,-131.638],"Li":[3.23176,5963.7,-5.73052,0.76777,-192.241],"Lu":[3.56343,4790.01,-9.45077,0.66978,-164.129],"Mg":[3.56039,4633.96,-12.44905,0.61506,-79.076],"Mn":[2.81989,5005.94,-4.8603,0.40471,-67.33],"Mo":[3.34126,5905.72,-7.3813,0.4325,120.4],"Nb":[3.35124,3380.08,-6.67034,0.53856,-82.711],"Nd":[3.75544,3039.2,-9.20023,0.73434,-143.678],"Ni":[2.82179,4820.82,-8.47533,1.14395,-18.878],"Pd":[3.05261,3096.59,-8.9985,0.73049,-32.009],"Pr":[3.79623,2991.82,-9.1993,0.75358,-136.853],"Pt":[3.33076,2259.78,-8.05317,0.59008,40.807],"Rh":[3.19123,4351.01,-6.8066,0.59606,-14.595],"Sb":[4.23331,2913.64,-7.9599,1.09769,127.945],"Sc":[3.21692,5220.52,-7.53211,0.7472,-135.633],"Si":[4.06573,1131.8,-8.41693,0.54739,-121.635],"Sm":[3.70962,2817.21,-9.26095,0.74862,-151.555],"Sn":[4.15922,2194.87,-10.33811,0.59858,-6.616],"Ta":[3.34142,3343.65,-1.93093,0.5306,-111.122],"Tb":[3.68437,3264.24,-9.34407,0.68187,-169.479],"Th":[3.98004,2573.39,-6.64996,0.72283,-154.996],"Ti":[3.04838,4533.91,-6.10282,0.60924,-112.592],"Tm":[3.7339,4920.68,-9.49966,0.61563,-194.015],"U":[3.32145,3365.73,-2.73901,0.7491,-97.779],"V":[3.03026,4430.29,-4.84882,0.44346,-114.744],"W":[3.04882,6788.13,-9.87298,0.39718,130.032],"Y":[3.63597,3973.22,-7.27406,0.7928,-159.176],"Zn":[3.08029,3616.64,-12.79387,0.41593,-1.206],"Zr":[3.26984,4355.14,-5.1915,0.66796,-122.708]};
+
+// StandardScaler: [bcc, snd, var_gs, var_mag, avg_dh]  — fitted on 771 clean entries
+const SMEAN  = [3.043188, 4588.32465, 0.951678, 0.386736, -69.878755];
+const SSCALE = [0.126119, 445.410934, 1.224657, 0.424226,  22.616079];
+
+const AVAIL = new Set(Object.keys(ED));
+
+// ── Periodic table positions ────────────────────────────────────────────
+const PT = {H:{n:1,r:1,c:1},He:{n:2,r:1,c:18},Li:{n:3,r:2,c:1},Be:{n:4,r:2,c:2},B:{n:5,r:2,c:13},C:{n:6,r:2,c:14},N:{n:7,r:2,c:15},O:{n:8,r:2,c:16},F:{n:9,r:2,c:17},Ne:{n:10,r:2,c:18},Na:{n:11,r:3,c:1},Mg:{n:12,r:3,c:2},Al:{n:13,r:3,c:13},Si:{n:14,r:3,c:14},P:{n:15,r:3,c:15},S:{n:16,r:3,c:16},Cl:{n:17,r:3,c:17},Ar:{n:18,r:3,c:18},K:{n:19,r:4,c:1},Ca:{n:20,r:4,c:2},Sc:{n:21,r:4,c:3},Ti:{n:22,r:4,c:4},V:{n:23,r:4,c:5},Cr:{n:24,r:4,c:6},Mn:{n:25,r:4,c:7},Fe:{n:26,r:4,c:8},Co:{n:27,r:4,c:9},Ni:{n:28,r:4,c:10},Cu:{n:29,r:4,c:11},Zn:{n:30,r:4,c:12},Ga:{n:31,r:4,c:13},Ge:{n:32,r:4,c:14},As:{n:33,r:4,c:15},Se:{n:34,r:4,c:16},Br:{n:35,r:4,c:17},Kr:{n:36,r:4,c:18},Rb:{n:37,r:5,c:1},Sr:{n:38,r:5,c:2},Y:{n:39,r:5,c:3},Zr:{n:40,r:5,c:4},Nb:{n:41,r:5,c:5},Mo:{n:42,r:5,c:6},Tc:{n:43,r:5,c:7},Ru:{n:44,r:5,c:8},Rh:{n:45,r:5,c:9},Pd:{n:46,r:5,c:10},Ag:{n:47,r:5,c:11},Cd:{n:48,r:5,c:12},In:{n:49,r:5,c:13},Sn:{n:50,r:5,c:14},Sb:{n:51,r:5,c:15},Te:{n:52,r:5,c:16},I:{n:53,r:5,c:17},Xe:{n:54,r:5,c:18},Cs:{n:55,r:6,c:1},Ba:{n:56,r:6,c:2},La:{n:57,r:6,c:3},Hf:{n:72,r:6,c:4},Ta:{n:73,r:6,c:5},W:{n:74,r:6,c:6},Re:{n:75,r:6,c:7},Os:{n:76,r:6,c:8},Ir:{n:77,r:6,c:9},Pt:{n:78,r:6,c:10},Au:{n:79,r:6,c:11},Hg:{n:80,r:6,c:12},Tl:{n:81,r:6,c:13},Pb:{n:82,r:6,c:14},Bi:{n:83,r:6,c:15},Th:{n:90,r:7,c:4},
+  Ce:{n:58,r:'la',c:4},Pr:{n:59,r:'la',c:5},Nd:{n:60,r:'la',c:6},Sm:{n:62,r:'la',c:8},Gd:{n:64,r:'la',c:10},
+};
+
+// ── Color scales (light→dark for each feature) ─────────────────────────
+// Each function returns a CSS color for element sym and current mode
+function elColor(sym, mode) {
+  const d = ED[sym];
+  if (!d) return 'var(--surface2)';
+  let val, mn, mx, stops;
+  switch(mode) {
+    case 'dh':
+      val = d[4]; mn = -200; mx = 20;
+      if (val > 10) return 'var(--surface2)';
+      stops = ['#FFF5F0','#FDCFBA','#F9845A','#E04F20','#9A2C0A','#5C1505'];
+      break;
+    case 'gs':
+      val = d[2]; mn = -14; mx = -1;
+      stops = ['#EFF6FF','#BFDBFE','#60A5FA','#2563EB','#1E40AF','#1E3A8A'];
+      break;
+    case 'bcc':
+      val = d[0]; mn = 2.65; mx = 4.05;
+      stops = ['#F0FDF4','#BBF7D0','#4ADE80','#16A34A','#166534','#052E16'];
+      break;
+    case 'snd':
+      val = d[1]; mn = 2500; mx = 11000;
+      stops = ['#FFF7ED','#FED7AA','#FB923C','#EA580C','#9A3412','#5C1A04'];
+      break;
+    case 'mag':
+      val = d[3]; mn = 0; mx = 2.8;
+      stops = ['#FAF5FF','#E9D5FF','#A855F7','#7E22CE','#581C87','#2E1065'];
+      break;
+  }
+  const t = Math.max(0, Math.min(1, (val - mn) / (mx - mn)));
+  const si = Math.min(Math.floor(t * (stops.length-1)), stops.length-2);
+  return stops[si];
+}
+
+// ── Mode metadata ──────────────────────────────────────────────────────
+const MODES = {
+  dh: {
+    icon:'🔥', title:'Design by hydrogenation energy',
+    body:'Colors show each element\'s <strong>hydrogenation energy</strong> (kJ/mol-H₂) from the Materials Project. Darker red = more negative = stronger hydrogen binder. A good alloy pairs a strong binder (La, Ti, Zr, Hf) with a weaker one (Ni, Fe, Cr, Al) to land in the target −30 to −40 kJ/mol-H₂ window.',
+    legend:[{bg:'#FFF5F0',lbl:'~0'},{bg:'#F9845A',lbl:'−100'},{bg:'#9A2C0A',lbl:'−200 kJ/mol'},{bg:'var(--surface2)',lbl:'No data / positive'}],
+  },
+  gs: {
+    icon:'⚡', title:'Match ground-state energies (paper\'s key descriptor)',
+    body:'Colors show each element\'s DFT <strong>ground-state energy</strong> — the key design descriptor from the paper. Select elements with <strong>similar shades</strong> to minimise the variance. Low variance in gs_energy → better near-ambient thermodynamics. LaNi₅, TiFe, and TiCr₂ all follow this principle.',
+    legend:[{bg:'#EFF6FF',lbl:'~0 eV'},{bg:'#60A5FA',lbl:'−7'},{bg:'#1E3A8A',lbl:'−14 eV'}],
+  },
+  bcc: {
+    icon:'🔷', title:'BCC lattice constant',
+    body:'Colors show the estimated <strong>BCC lattice constant</strong> per element (Å) — a proxy for atomic size. The model\'s average BCC lattice constant descriptor captures the overall packing density of the alloy. Larger atoms (La, Ce, Th) give a more open lattice; smaller ones (Ni, Cr, Fe) a tighter one.',
+    legend:[{bg:'#F0FDF4',lbl:'2.65 Å'},{bg:'#4ADE80',lbl:'~3.35'},{bg:'#052E16',lbl:'4.05 Å'}],
+  },
+  snd: {
+    icon:'🔊', title:'Sound velocity',
+    body:'Colors show each element\'s <strong>speed of sound</strong> (m/s) — related to stiffness of the metallic bond. The average sound velocity across the alloy acts as a proxy for overall bond strength. High-velocity elements (Be, Li, Cr, Mo) indicate stiffer, stronger bonds.',
+    legend:[{bg:'#FFF7ED',lbl:'2500 m/s'},{bg:'#FB923C',lbl:'~6000'},{bg:'#5C1A04',lbl:'11000 m/s'}],
+  },
+  mag: {
+    icon:'🧲', title:'Magnetic moment variance',
+    body:'Colors show each element\'s <strong>DFT magnetic moment</strong> (μB). Mixing elements with very different magnetic moments raises the variance feature — a secondary descriptor. Elements like Fe, Co, Ni, and Pr have large moments; most others are near zero.',
+    legend:[{bg:'#FAF5FF',lbl:'~0 μB'},{bg:'#A855F7',lbl:'~1.4'},{bg:'#2E1065',lbl:'2.8+ μB'}],
+  },
+};
+
+// ── State ─────────────────────────────────────────────────────────────
+let composition = {}, colorMode = 'dh', debounceTimer = null, lastResult = null;
+let sessEnthalpy = null, sessPressure = null, modelsReady = false;
+
+// ── Load ONNX models ───────────────────────────────────────────────────
+async function loadModels() {
+  const bar = document.getElementById('status-bar');
+  const txt = document.getElementById('status-text');
+  try {
+    const BASE = 'https://raw.githubusercontent.com/KaiS-UC/ML4MHs/main/web_tool/';
+    txt.textContent = 'Fetching models from GitHub…';
+    [sessEnthalpy, sessPressure] = await Promise.all([
+      ort.InferenceSession.create(BASE + 'gb_enthalpy.onnx',  {executionProviders:['wasm']}),
+      ort.InferenceSession.create(BASE + 'nn_pressure.onnx',  {executionProviders:['wasm']}),
+    ]);
+    modelsReady = true;
+    bar.style.display = 'none';
+    document.getElementById('model-badge').textContent = 'GradientBoost + NeuralNetwork · minimal features';
+    if (Object.keys(composition).length >= 2) runAnalysis();
+  } catch(e) {
+    bar.style.display = 'none';
+    modelsReady = false;
+  }
+}
+
+// ── Feature computation ────────────────────────────────────────────────
+function compToFeatures(comp) {
+  const els = Object.keys(comp);
+  const tot = els.reduce((s,e) => s + comp[e], 0);
+  const w = e => comp[e] / tot;
+  const ave = idx => els.reduce((s,e) => s + w(e) * (ED[e]?.[idx] ?? 0), 0);
+  const varF = idx => {
+    const m = ave(idx);
+    return els.reduce((s,e) => s + w(e) * Math.pow((ED[e]?.[idx] ?? 0) - m, 2), 0);
+  };
+  const bcc = ave(0), snd = ave(1), vgs = varF(2), vmag = varF(3), adh = ave(4);
+  const raw = [bcc, snd, vgs, vmag, adh];
+  const scaled = raw.map((v,i) => (v - SMEAN[i]) / SSCALE[i]);
+  return {raw, scaled, bcc, snd, vgs, vmag, adh};
+}
+
+async function predict(scaled) {
+  const t = new ort.Tensor('float32', Float32Array.from(scaled), [1,5]);
+  const [rDH, rPEQ] = await Promise.all([
+    sessEnthalpy.run({X:t}),
+    sessPressure.run({X:t}),
+  ]);
+  return {
+    dH:  rDH['variable']?.data[0] ?? rDH[Object.keys(rDH)[0]].data[0],
+    peq: rPEQ['variable']?.data[0] ?? rPEQ[Object.keys(rPEQ)[0]].data[0],
+  };
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────
+function setMode(m) {
+  colorMode = m;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.mode===m));
+  const meta = MODES[m];
+  document.getElementById('g-icon').textContent = meta.icon;
+  document.getElementById('g-title').textContent = meta.title;
+  document.getElementById('g-body').innerHTML = meta.body;
+  renderLegend(); renderPT();
+}
+
+function renderLegend() {
+  document.getElementById('legend').innerHTML = MODES[colorMode].legend
+    .map(i => `<div class="legend-item"><div class="legend-swatch" style="background:${i.bg};border:1px solid var(--border)"></div>${i.lbl}</div>`).join('');
+}
+
+function renderPT() {
+  const grid = document.getElementById('pt');
+  grid.innerHTML = '';
+  const cells = {};
+  Object.entries(PT).forEach(([sym,d]) => { if(typeof d.r==='number') cells[`${d.r}-${d.c}`]=sym; });
+
+  for (let row=1; row<=7; row++) {
+    for (let col=1; col<=18; col++) {
+      if (row===6&&col===3) { const g=document.createElement('div'); g.className='la-label'; g.textContent='La…'; grid.appendChild(g); continue; }
+      if (row===7&&col===3) { const g=document.createElement('div'); g.className='la-label'; g.textContent='Ac…'; grid.appendChild(g); continue; }
+      const sym = cells[`${row}-${col}`];
+      const div = document.createElement('div');
+      if (!sym) { div.className='gap'; grid.appendChild(div); continue; }
+      const avail = AVAIL.has(sym), sel = composition[sym]!==undefined;
+      div.className = 'el' + (avail?'':' unavail') + (sel?' selected':'');
+      div.style.background = elColor(sym, colorMode);
+      div.innerHTML = `<span class="el-num">${PT[sym].n}</span><span class="el-sym">${sym}</span>`;
+      if (avail) div.onclick = () => toggleEl(sym);
+      grid.appendChild(div);
+    }
+  }
+  // Lanthanide row
+  const laRow = document.createElement('div');
+  laRow.style.cssText = 'grid-column:1/-1;display:grid;grid-template-columns:repeat(18,1fr);gap:2.5px;margin-top:4px';
+  for (let col=1; col<=18; col++) {
+    const laEl = Object.entries(PT).find(([s,d]) => d.r==='la' && d.c===col);
+    const div = document.createElement('div');
+    if (col<4 || col>16 || !laEl) { div.className='gap'; laRow.appendChild(div); continue; }
+    const [sym] = laEl; const avail=AVAIL.has(sym), sel=composition[sym]!==undefined;
+    div.className = 'el' + (avail?'':' unavail') + (sel?' selected':'');
+    div.style.background = elColor(sym, colorMode);
+    div.innerHTML = `<span class="el-num">${PT[sym].n}</span><span class="el-sym">${sym}</span>`;
+    if (avail) div.onclick = () => toggleEl(sym);
+    laRow.appendChild(div);
+  }
+  grid.appendChild(laRow);
+}
+
+function toggleEl(sym) {
+  if (composition[sym]!==undefined) { delete composition[sym]; }
+  else { if (Object.keys(composition).length>=5) return; composition[sym]=1; }
+  normalise(); renderPT(); renderComp(); scheduleAnalysis();
+}
+function normalise() {
+  const els=Object.keys(composition); if(!els.length) return;
+  const tot = els.reduce((s,k) => s+composition[k], 0);
+  if (tot<=0) { const eq=1/els.length; els.forEach(k=>composition[k]=eq); return; }
+  els.forEach(k => composition[k] = composition[k]/tot);
+}
+
+// ── Composition display ────────────────────────────────────────────────
+function computeFormula(comp) {
+  const els=Object.keys(comp); if(els.length<2) return null;
+  const vals=els.map(s=>comp[s]), minVal=Math.min(...vals);
+  const ratios=vals.map(v=>v/minVal);
+  let best=null;
+  for (const mult of [1,2,3,4,5,6,8,10,12,15,20,25,50,100]) {
+    const sc=ratios.map(r=>r*mult), ro=sc.map(r=>Math.round(r));
+    const mx=Math.max(...sc.map((r,i)=>Math.abs(r-ro[i])/Math.max(ro[i],1)));
+    if (mx<0.035 && ro.every(r=>r>=1)) { best={rounded:ro}; break; }
+  }
+  let subs;
+  if (best) {
+    const gcd=(a,b)=>b===0?a:gcd(b,a%b);
+    let g=best.rounded[0]; for(let i=1;i<best.rounded.length;i++) g=gcd(g,best.rounded[i]);
+    subs=best.rounded.map(r=>r/(g||1));
+  } else {
+    subs=ratios.map(r=>Math.round(r*100)/100);
+  }
+  return els.map((s,i)=>({s,sub:subs[i]})).sort((a,b)=>comp[b.s]-comp[a.s]);
+}
+
+function renderFormula() {
+  const box=document.getElementById('formula-box'), els=Object.keys(composition);
+  if(els.length<2) { box.innerHTML='<span class="formula-empty">Formula will appear here</span>'; return; }
+  const parts=computeFormula(composition);
+  box.innerHTML=`<span class="formula-text">${parts.map(p=>`${p.s}${p.sub===1?'':`<sub>${Number.isInteger(p.sub)?p.sub:p.sub.toFixed(1)}</sub>`}`).join('')}</span>`;
+}
+
+function syncChips() {
+  const els=Object.keys(composition);
+  document.getElementById('comp-list').innerHTML = els.length
+    ? els.map(s=>`<div class="chip"><span class="chip-sym">${s}</span><span class="chip-frac"> ${(composition[s]*100).toFixed(1)}%</span><span class="chip-rm" onclick="removeEl('${s}')" title="Remove">×</span></div>`).join('')
+    : '<span style="font-size:13px;color:var(--fg3);align-self:center">Click elements above to add them (up to 5)</span>';
+}
+
+function renderComp() {
+  const els=Object.keys(composition);
+  syncChips();
+  const fr=document.getElementById('frac-row');
+  document.getElementById('norm-note').style.display = els.length>1?'flex':'none';
+  if (!els.length) {
+    fr.innerHTML=''; document.getElementById('results-panel').style.display='none'; renderFormula(); return;
+  }
+  fr.innerHTML = els.map(s=>`
+    <div class="frac-item">
+      <span class="frac-label">${s}</span>
+      <input type="range" min="1" max="100" step="1" id="sl-${s}" value="${Math.round(composition[s]*100)}"
+        oninput="updateSlider('${s}',this.value)">
+      <div class="frac-num-wrap">
+        <input type="number" min="0" max="100" step="0.1" id="num-${s}" class="frac-num"
+          value="${(composition[s]*100).toFixed(1)}"
+          oninput="updateNum('${s}',this.value)">
+        <span class="frac-pct">%</span>
+      </div>
+    </div>`).join('');
+  renderFormula();
+}
+
+function updateSlider(sym,v) {
+  composition[sym]=parseFloat(v)/100; normalise();
+  Object.keys(composition).forEach(s=>{
+    const sl=document.getElementById('sl-'+s), ni=document.getElementById('num-'+s);
+    if(sl) sl.value=Math.round(composition[s]*100);
+    if(ni) ni.value=(composition[s]*100).toFixed(1);
+  });
+  syncChips(); renderFormula(); scheduleAnalysis();
+}
+function updateNum(sym,v) {
+  let n=parseFloat(v); if(isNaN(n)) n=0;
+  composition[sym]=Math.max(0,Math.min(100,n))/100; normalise();
+  Object.keys(composition).forEach(s=>{
+    const sl=document.getElementById('sl-'+s);
+    if(sl) sl.value=Math.round(composition[s]*100);
+    const ni=document.getElementById('num-'+s);
+    if(ni&&s!==sym) ni.value=(composition[s]*100).toFixed(1);
+  });
+  syncChips(); renderFormula(); scheduleAnalysis();
+}
+function removeEl(sym) { delete composition[sym]; normalise(); renderPT(); renderComp(); scheduleAnalysis(); }
+function clearAll() { composition={}; renderPT(); renderComp(); document.getElementById('results-panel').style.display='none'; }
+function loadBM(name) {
+  const b={LaNi5:{La:1/6,Ni:5/6},TiFe:{Ti:.5,Fe:.5},TiCr2:{Ti:1/3,Cr:2/3},MgNi:{Mg:.5,Ni:.5}};
+  composition={...b[name]}; renderPT(); renderComp(); scheduleAnalysis();
+}
+
+// ── Analysis ────────────────────────────────────────────────────────────
+function scheduleAnalysis() {
+  const box=document.getElementById('results-box');
+  if(box) box.classList.add('updating');
+  clearTimeout(debounceTimer); debounceTimer=setTimeout(runAnalysis, 180);
+}
+
+async function runAnalysis() {
+  const els=Object.keys(composition);
+  const box=document.getElementById('results-box');
+  if(els.length<2) { document.getElementById('results-panel').style.display='none'; if(box) box.classList.remove('updating'); return; }
+
+  const {scaled,bcc,snd,vgs,vmag,adh} = compToFeatures(composition);
+  let dH, peq;
+  if (modelsReady) {
+    try { ({dH,peq} = await predict(scaled)); }
+    catch(e) { if(box) box.classList.remove('updating'); return; }
+  } else {
+    // Heuristic fallback while models load
+    dH  = Math.max(10, Math.min(130, Math.abs(adh)*0.28 + vgs*1.2));
+    peq = Math.max(-12, Math.min(8, (adh+35)/12));
+  }
+  dH = Math.abs(dH); // formation enthalpy is stored as positive kJ/mol in HydPark convention
+
+  const bar = Math.exp(peq);
+  const g1  = Math.round(Math.max(0, 1-Math.abs(dH-35)/35)*100);
+  const g2  = Math.round(Math.max(0, 1-Math.abs(peq)/6)*100);
+  const gaugeColor = pct => pct>65?'var(--green)':pct>35?'var(--amber)':'var(--red)';
+
+  document.getElementById('r-dh').textContent  = dH.toFixed(1);
+  document.getElementById('r-peq').textContent = peq.toFixed(2);
+  document.getElementById('r-bar').textContent = fmtBar(bar);
+  const pctx = pressureContext(bar);
+  const pEl=document.getElementById('p-ctx');
+  pEl.textContent=pctx.txt; pEl.style.background=pctx.bg; pEl.style.color=pctx.col;
+
+  document.getElementById('g1-pct').textContent = g1+'%';
+  document.getElementById('g2-pct').textContent = g2+'%';
+  document.getElementById('g1-fill').style.cssText=`width:${g1}%;background:${gaugeColor(g1)}`;
+  document.getElementById('g2-fill').style.cssText=`width:${g2}%;background:${gaugeColor(g2)}`;
+
+  const score=(g1+g2)/2;
+  const vEl=document.getElementById('verdict');
+  if(score>65) { vEl.style.cssText='text-align:center;font-size:13.5px;font-weight:500;padding:9px;border-radius:var(--r-md);margin-top:10px;background:var(--green-s);color:var(--green)'; vEl.textContent='Promising — near target for both ΔH and p_eq';}
+  else if(score>38){vEl.style.cssText='text-align:center;font-size:13.5px;font-weight:500;padding:9px;border-radius:var(--r-md);margin-top:10px;background:var(--amber-s);color:var(--amber)'; vEl.textContent='Partial match — adjust stoichiometry or try a different element';}
+  else{vEl.style.cssText='text-align:center;font-size:13.5px;font-weight:500;padding:9px;border-radius:var(--r-md);margin-top:10px;background:var(--red-s);color:var(--red)'; vEl.textContent='Outside target zone — try different elements';}
+
+  document.getElementById('d-bcc').textContent    = bcc.toFixed(4)+' Å';
+  document.getElementById('d-snd').textContent    = Math.round(snd)+' m/s';
+  document.getElementById('d-var').textContent    = vgs.toFixed(4)+' eV²/atom²';
+  document.getElementById('d-mag').textContent    = vmag.toFixed(4)+' μB²';
+  document.getElementById('d-avgdh').textContent  = adh.toFixed(1)+' kJ/mol-H₂';
+
+  document.getElementById('results-panel').style.display='block';
+  if(box) box.classList.remove('updating');
+  lastResult={els:[...els],dH,peq,bar,vgs,vmag,bcc,snd,adh};
+}
+
+function fmtBar(b) {
+  if(b>=1000) return (b/1000).toFixed(1)+' kbar';
+  if(b>=1)    return b.toFixed(2)+' bar';
+  if(b>=0.01) return b.toFixed(4)+' bar';
+  return b.toExponential(2)+' bar';
+}
+function pressureContext(b) {
+  if(b>500)  return {txt:'Far too high — impractical storage pressure',          bg:'var(--red-s)',  col:'var(--red)'};
+  if(b>50)   return {txt:'High pressure — requires heavy-duty infrastructure',  bg:'var(--red-s)',  col:'var(--red)'};
+  if(b>10)   return {txt:'Above target — pressure higher than near-ambient goal',bg:'var(--amber-s)',col:'var(--amber)'};
+  if(b>0.5)  return {txt:'Near-ambient ✓ — practical for room-temperature use', bg:'var(--green-s)',col:'var(--green)'};
+  if(b>0.01) return {txt:'Low pressure — desorption difficult at 25°C',          bg:'var(--amber-s)',col:'var(--amber)'};
+  return           {txt:'Very low — material binds H₂ too strongly',            bg:'var(--red-s)',  col:'var(--red)'};
+}
+
+function askClaude() {
+  if(!lastResult) return;
+  const parts=computeFormula(composition);
+  const fstr=parts.map(p=>p.s+(p.sub===1?'':(Number.isInteger(p.sub)?p.sub:p.sub.toFixed(1)))).join('');
+  const comp=lastResult.els.map(s=>s+'('+(composition[s]*100).toFixed(1)+'%)').join(', ');
+  sendPrompt(`I designed an alloy in the ML4MHs web tool: ${comp} (formula ${fstr}). The GradientBoost model predicted ΔH = ${lastResult.dH.toFixed(1)} kJ/mol-H₂ and the NeuralNetwork predicted ln(p_eq) = ${lastResult.peq.toFixed(2)} (≈ ${fmtBar(lastResult.bar)}). Descriptors: var(gs_energy) = ${lastResult.vgs.toFixed(3)} eV², ave_hydro = ${lastResult.adh.toFixed(1)} kJ/mol-H₂. What do you think? How could I optimise it further?`);
+}
+
+// ── Init ────────────────────────────────────────────────────────────────
+setMode('dh');
+renderComp();
+requestAnimationFrame(() => {});
+loadModels();
+</script>
+
+</body></html>
