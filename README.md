@@ -21,4 +21,4 @@ If you want to update the hydrogenation data parsed from the MaterialsProject, y
 ## How to cite
 If you make use of our code in any of your publications, please cite our corresponding paper. A link to the paper will appear in this section once it is published. Please check the latest version of the repository. If this version is still the latest, you may cite this software as:
 
-K. Sellschopp and S. Faouri (2025), *Machine Learning for Metal Hydrides (ML4MHs)* version 1.0 [Computer software], https://github.com/KaiS-UC/ML4MHs/releases/tag/v1.0
+K. Sellschopp and S. Faouri (2026), *Machine Learning for Metal Hydrides (ML4MHs)* version 2.0 [Computer software], https://github.com/KaiS-UC/ML4MHs/releases/tag/v2.0
